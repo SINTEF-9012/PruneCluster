@@ -25,14 +25,17 @@ module PruneCluster {
 
 	export class ClusterObject {
 		public position: Position;
+		public data: any;
 	}
 
 	export class Marker extends ClusterObject {
+
 		public category: string;
 		public weight:number;
 
-		constructor(lat: number, lng: number) {
+		constructor(lat: number, lng: number, data: {} = {}) {
 			super();
+			this.data = data;
 			this.position = { lat: lat, lng: lng };
 			this.weight = 1;
 		}
@@ -53,10 +56,15 @@ module PruneCluster {
 
 		private _totalWeight: number;
 
+		public marker: Marker;
+
 		constructor(marker: Marker) {
 			super();
 
+			this.marker = marker;
+
 			this.stats = {};
+			this.data = {};
 			this.population = 1;
 
 			if (marker.category) {
@@ -78,6 +86,8 @@ module PruneCluster {
 		}
 
 		public AddMarker(marker: Marker) {
+
+			this.marker = marker;
 
 			// Compute the weighted arithmetic mean
 			var weight = marker.weight,
@@ -106,6 +116,7 @@ module PruneCluster {
 		}
 
 		public Reset() {
+			this.marker = undefined;
 			this.population = 0;
 			this._totalWeight = 0;
 		}
@@ -163,10 +174,10 @@ module PruneCluster {
 		private _clusters: Cluster[] = [];
 
 		// Cluster size in (in pixels)
-		public Size: number = 160;
+		public Size: number = 166;
 
 		// View padding (extended size of the view)
-		public ViewPadding: number = 0.1;
+		public ViewPadding: number = 0.13;
 
 		// These methods should be defined by the user
 		public Project: (lat:number, lng:number) => Point;
@@ -227,11 +238,12 @@ module PruneCluster {
 		private _resetClusterViews() {
 			// Reset all the clusters
 			for (var i = 0, l = this._clusters.length; i < l; ++i) {
-				this._clusters[i].Reset();
+				var cluster = this._clusters[i];
+				cluster.Reset();
 
 				// The projection changes in accordance with the view's zoom level
 				// (at least with Leaflet.js)
-				this._clusters[i].ComputeBounds(this);
+				cluster.ComputeBounds(this);
 			}
 		}
 
@@ -294,12 +306,13 @@ module PruneCluster {
 						// If the cluster is far away the current marker
 						// we can remove it from the list of active clusters
 						// because we will never reach it again
-						if (cluster.bounds.maxLng < marker.position.lng) {
+						// TODO fix it
+//						if (cluster.bounds.maxLng < marker.position.lng) {
 							// The list of cluster is sorted so we can use the
 							// start index in order to skip it
-							++startClustersIndex;
-							continue;
-						}
+//							++startClustersIndex;
+//							continue;
+//						}
 
 						if (checkPositionInsideBounds(markerPosition, cluster.bounds)) {
 							cluster.AddMarker(marker);
