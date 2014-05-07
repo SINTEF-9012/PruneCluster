@@ -43,5 +43,6 @@ When you set categories to your markers, a small object representing the number 
  - [ ] Tests
  - [ ] Documentation
  - [ ] Beautiful examples
+ - [ ] Implement the cluster anti-overlapping (when their positions are very close)
  - [x] **JavaScript build**
 
