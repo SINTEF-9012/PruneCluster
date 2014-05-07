@@ -1,8 +1,10 @@
+/// <reference path="bower_components/DefinitelyTyped/Leaflet/Leaflet.d.ts"/>
+
 module PruneCluster {
 	export declare class LeafletAdapter implements L.ILayer {
 		Cluster: PruneCluster;
 
-		addTo: (map: L.Map) => void;
+		onAdd: (map: L.Map) => void;
 		onRemove: (map: L.Map) => void;
 		
 		RegisterMarker: (marker: Marker) => void;
@@ -117,7 +119,7 @@ var PruneClusterForLeaflet = L.Class.extend({
 		}
 
 		clusters.forEach((cluster: PruneCluster.Cluster) => {
-			var m;
+			var m = undefined;
 
 			var position = new L.LatLng(cluster.averagePosition.lat, cluster.averagePosition.lng);
 
