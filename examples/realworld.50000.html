@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Realworld 50k</title>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+	<script src="realworld.50000.1.js"></script>
+	<script src="realworld.50000.2.js"></script>
+
+	<style>
+		html, body, #map {
+			width:100%;
+			height:100%;
+			margin: 0;
+			padding: 0;
+		}
+		.prunecluster {
+			font-size: 12px;
+			border-radius: 20px;
+		}
+		.prunecluster div {
+			width: 30px;
+			height: 30px;
+			text-align: center;
+			margin-left: 5px;
+			margin-top: 5px;
+			border-radius: 15px;
+		}
+		.prunecluster div span {
+			line-height: 30px;
+		}
+
+		.prunecluster-small {
+			background-color: rgba(181, 226, 140, 0.6);
+		}
+
+		.prunecluster-small div {
+			background-color: rgba(110, 204, 57, 0.6);
+		}
+
+		.prunecluster-medium {
+			background-color: rgba(241, 211, 87, 0.6);
+		}
+
+		.prunecluster-medium div {
+			background-color: rgba(240, 194, 12, 0.6);
+		}
+
+		.prunecluster-large {
+			background-color: rgba(253, 156, 115, 0.6);
+		}
+
+		.prunecluster-large div {
+			background-color: rgba(241, 128, 23, 0.6);
+		}
+	</style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView(L.latLng(-37.79, 175.27), 12);
+
+    L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    var leafletView = new PruneClusterForLeaflet();
+    leafletView.Cluster.Size = 182;
+
+    for (var i = 0, l = addressPoints.length; i < l; ++i) {
+        leafletView.RegisterMarker(new PruneCluster.Marker(addressPoints[i][0], addressPoints[i][1]));
+    }
+    for (i = 0, l = addressPoints2.length; i < l; ++i) {
+        leafletView.RegisterMarker(new PruneCluster.Marker(addressPoints2[i][0], addressPoints2[i][1]));
+    }
+
+    map.addLayer(leafletView);
+</script>
+</body>
+</html>
