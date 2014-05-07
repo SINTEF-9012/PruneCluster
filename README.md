@@ -20,7 +20,7 @@ Number of markers|First step|Update (low zoom level)|Update (high zoom level)
 [100](http://sintef-9012.github.io/PruneCluster/examples/random.100.html)|instant|instant|instant
 [1 000](http://sintef-9012.github.io/PruneCluster/examples/random.1000.html)|instant|instant|instant
 [10 000](http://sintef-9012.github.io/PruneCluster/examples/random.10000.html)|48ms|10ms|15ms
-[60 000)](http://sintef-9012.github.io/PruneCluster/examples/random.60000.html)|135ms|55ms|17ms
+[60 000](http://sintef-9012.github.io/PruneCluster/examples/random.60000.html)|135ms|55ms|17ms
 [150 000](http://sintef-9012.github.io/PruneCluster/examples/random.150000.html)|520ms|280ms|42ms
 [1 000 000](http://sintef-9012.github.io/PruneCluster/examples/random.1000000.html)|3.5s|850ms|290ms
 
@@ -43,5 +43,5 @@ When you set categories to your markers, a small object representing the number 
  - [ ] Tests
  - [ ] Documentation
  - [ ] Beautiful examples
- - [ ] **JavaScript build**
+ - [x] **JavaScript build**
 
