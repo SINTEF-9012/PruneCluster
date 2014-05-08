@@ -54,14 +54,14 @@ module PruneCluster {
 		public averagePosition: Position;
 		public stats: { [category: string]: number };
 
-		private _totalWeight: number;
+		public totalWeight: number;
 
-		public marker: Marker;
+		public lastMarker: Marker;
 
 		constructor(marker: Marker) {
 			super();
 
-			this.marker = marker;
+			this.lastMarker = marker;
 
 			this.stats = {};
 			this.data = {};
@@ -71,7 +71,7 @@ module PruneCluster {
 				this.stats[marker.category] = 1;
 			}
 
-			this._totalWeight = marker.weight;
+			this.totalWeight = marker.weight;
 
 			this.position = {
 				lat: marker.position.lat,
@@ -87,11 +87,11 @@ module PruneCluster {
 
 		public AddMarker(marker: Marker) {
 
-			this.marker = marker;
+			this.lastMarker = marker;
 
 			// Compute the weighted arithmetic mean
 			var weight = marker.weight,
-				currentTotalWeight = this._totalWeight,
+				currentTotalWeight = this.totalWeight,
 				newWeight = weight + currentTotalWeight;
 
 			this.averagePosition.lat =
@@ -103,7 +103,7 @@ module PruneCluster {
 				marker.position.lng * weight) / newWeight;
 
 			++this.population;
-			this._totalWeight = newWeight;
+			this.totalWeight = newWeight;
 
 			// Update the statistics if needed
 			if (marker.category) {
@@ -116,9 +116,9 @@ module PruneCluster {
 		}
 
 		public Reset() {
-			this.marker = undefined;
+			this.lastMarker = undefined;
 			this.population = 0;
-			this._totalWeight = 0;
+			this.totalWeight = 0;
 		}
 
 		// Compute the bounds
@@ -184,6 +184,9 @@ module PruneCluster {
 		public UnProject: (x:number, y:number) => Position;
 
 		public RegisterMarker(marker: Marker) {
+			if ((<any>marker)._removeFlag) {
+				delete (<any>marker)._removeFlag;
+			}
 			this._markers.push(marker);
 			this._nbChanges += 1;
 		}
@@ -353,5 +356,67 @@ module PruneCluster {
 
 			return this._clusters;
 		}
+
+		public RemoveMarkers(markers: Marker[]) {
+
+			// Mark the markers to be deleted
+			for (var i = 0, l = markers.length; i < l; ++i) {
+				(<any>markers[i])._removeFlag = true;
+			}
+
+			// Create a new list without the marked markers
+			var newMarkersList = [];
+			for (i = 0, l = this._markers.length; i < l; ++i) {
+				if (!(<any>this._markers[i])._removeFlag) {
+					newMarkersList.push(this._markers[i]);
+				}
+			}
+
+			this._markers = newMarkersList;
+		}
+
+		// This method is a bit slow ( O(n)) because it's not worth to make
+		// system which will slow down all the clusters just to have
+		// this one fast
+		public FindMarkersBoundsInArea(area: Bounds): Bounds {
+			var aMinLat = area.minLat,
+				aMaxLat = area.maxLat,
+				aMinLng = area.minLng,
+				amaxLng = area.maxLng,
+				
+				rMinLat = Number.MAX_VALUE,
+				rMaxLat = Number.MIN_VALUE,
+				rMinLng = Number.MAX_VALUE,
+				rMaxLng = Number.MIN_VALUE,
+				
+				markers = this._markers,
+				nbMarkersInArea = 0;
+
+			for (var i = 0, l = markers.length; i < l; ++i) {
+				var pos = markers[i].position;
+				if (pos.lat >= aMinLat && pos.lat <= aMaxLat &&
+					pos.lng >= aMinLng && pos.lng <= amaxLng) {
+
+					++nbMarkersInArea;
+
+					if (pos.lat < rMinLat) rMinLat = pos.lat;
+					if (pos.lat > rMaxLat) rMaxLat = pos.lat;
+					if (pos.lng < rMinLng) rMinLng = pos.lng;
+					if (pos.lng > rMaxLng) rMaxLng = pos.lng;
+				}
+			}
+
+			if (nbMarkersInArea) {
+				return {
+					minLat: rMinLat,
+					maxLat: rMaxLat,
+					minLng: rMinLng,
+					maxLng: rMaxLng
+				};
+			}
+
+			return null;
+		}
+
 	}
 }

@@ -31,6 +31,10 @@ var PruneClusterForLeaflet = L.Class.extend({
 		this.Cluster.RegisterMarker(marker);
 	},
 
+	RemoveMarkers: function(markers: PruneCluster.Marker[]) {
+		this.Cluster.RemoveMarkers(markers);
+	},
+
 	BuildLeafletCluster: function (cluster: PruneCluster.Cluster, position: L.LatLng): L.ILayer {
 		var m = new L.Marker(position, {
 			icon: this.BuildLeafletClusterIcon(cluster)
