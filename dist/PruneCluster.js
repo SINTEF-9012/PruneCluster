@@ -44,7 +44,7 @@ var PruneCluster;
         function Cluster(marker) {
             _super.call(this);
 
-            this.marker = marker;
+            this.lastMarker = marker;
 
             this.stats = {};
             this.data = {};
@@ -54,7 +54,7 @@ var PruneCluster;
                 this.stats[marker.category] = 1;
             }
 
-            this._totalWeight = marker.weight;
+            this.totalWeight = marker.weight;
 
             this.position = {
                 lat: marker.position.lat,
@@ -67,16 +67,16 @@ var PruneCluster;
             };
         }
         Cluster.prototype.AddMarker = function (marker) {
-            this.marker = marker;
+            this.lastMarker = marker;
 
-            var weight = marker.weight, currentTotalWeight = this._totalWeight, newWeight = weight + currentTotalWeight;
+            var weight = marker.weight, currentTotalWeight = this.totalWeight, newWeight = weight + currentTotalWeight;
 
             this.averagePosition.lat = (this.averagePosition.lat * currentTotalWeight + marker.position.lat * weight) / newWeight;
 
             this.averagePosition.lng = (this.averagePosition.lng * currentTotalWeight + marker.position.lng * weight) / newWeight;
 
             ++this.population;
-            this._totalWeight = newWeight;
+            this.totalWeight = newWeight;
 
             if (marker.category) {
                 if (this.stats.hasOwnProperty(marker.category)) {
@@ -88,9 +88,9 @@ var PruneCluster;
         };
 
         Cluster.prototype.Reset = function () {
-            this.marker = undefined;
+            this.lastMarker = undefined;
             this.population = 0;
-            this._totalWeight = 0;
+            this.totalWeight = 0;
         };
 
         Cluster.prototype.ComputeBounds = function (cluster) {
@@ -137,6 +137,9 @@ var PruneCluster;
             this.ViewPadding = 0.13;
         }
         PruneCluster.prototype.RegisterMarker = function (marker) {
+            if (marker._removeFlag) {
+                delete marker._removeFlag;
+            }
             this._markers.push(marker);
             this._nbChanges += 1;
         };
@@ -248,6 +251,52 @@ var PruneCluster;
 
             return this._clusters;
         };
+
+        PruneCluster.prototype.RemoveMarkers = function (markers) {
+            for (var i = 0, l = markers.length; i < l; ++i) {
+                markers[i]._removeFlag = true;
+            }
+
+            var newMarkersList = [];
+            for (i = 0, l = this._markers.length; i < l; ++i) {
+                if (!this._markers[i]._removeFlag) {
+                    newMarkersList.push(this._markers[i]);
+                }
+            }
+
+            this._markers = newMarkersList;
+        };
+
+        PruneCluster.prototype.FindMarkersBoundsInArea = function (area) {
+            var aMinLat = area.minLat, aMaxLat = area.maxLat, aMinLng = area.minLng, amaxLng = area.maxLng, rMinLat = Number.MAX_VALUE, rMaxLat = Number.MIN_VALUE, rMinLng = Number.MAX_VALUE, rMaxLng = Number.MIN_VALUE, markers = this._markers, nbMarkersInArea = 0;
+
+            for (var i = 0, l = markers.length; i < l; ++i) {
+                var pos = markers[i].position;
+                if (pos.lat >= aMinLat && pos.lat <= aMaxLat && pos.lng >= aMinLng && pos.lng <= amaxLng) {
+                    ++nbMarkersInArea;
+
+                    if (pos.lat < rMinLat)
+                        rMinLat = pos.lat;
+                    if (pos.lat > rMaxLat)
+                        rMaxLat = pos.lat;
+                    if (pos.lng < rMinLng)
+                        rMinLng = pos.lng;
+                    if (pos.lng > rMaxLng)
+                        rMaxLng = pos.lng;
+                }
+            }
+
+            if (nbMarkersInArea) {
+                return {
+                    minLat: rMinLat,
+                    maxLat: rMaxLat,
+                    minLng: rMinLng,
+                    maxLng: rMaxLng
+                };
+            }
+
+            return null;
+        };
         return PruneCluster;
     })();
     _PruneCluster.PruneCluster = PruneCluster;
@@ -257,9 +306,13 @@ var PruneCluster;
 })(PruneCluster || (PruneCluster = {}));
 
 var PruneClusterForLeaflet = L.Class.extend({
-    initialize: function () {
+    initialize: function (size, clusterMargin) {
         var _this = this;
+        if (typeof size === "undefined") { size = 160; }
+        if (typeof clusterMargin === "undefined") { clusterMargin = 20; }
         this.Cluster = new PruneCluster.PruneCluster();
+        this.Cluster.Size = size;
+        this.clusterMargin = Math.min(clusterMargin, size / 4);
 
         this.Cluster.Project = function (lat, lng) {
             return _this._map.project(new L.LatLng(lat, lng));
@@ -274,6 +327,9 @@ var PruneClusterForLeaflet = L.Class.extend({
     RegisterMarker: function (marker) {
         this.Cluster.RegisterMarker(marker);
     },
+    RemoveMarkers: function (markers) {
+        this.Cluster.RemoveMarkers(markers);
+    },
     BuildLeafletCluster: function (cluster, position) {
         var _this = this;
         var m = new L.Marker(position, {
@@ -281,7 +337,10 @@ var PruneClusterForLeaflet = L.Class.extend({
         });
 
         m.on('click', function () {
-            _this._map.fitBounds(new L.LatLngBounds(new L.LatLng(cluster.bounds.minLat, cluster.bounds.maxLng), new L.LatLng(cluster.bounds.maxLat, cluster.bounds.minLng)));
+            var b = _this.Cluster.FindMarkersBoundsInArea(cluster.bounds);
+            if (b) {
+                _this._map.fitBounds(new L.LatLngBounds(new L.LatLng(b.minLat, b.maxLng), new L.LatLng(b.maxLat, b.minLng)));
+            }
         });
 
         return m;
@@ -333,18 +392,16 @@ var PruneClusterForLeaflet = L.Class.extend({
         if (this.disableProcessView)
             return;
 
-        var map = this._map, bounds = map.getBounds();
+        var map = this._map, bounds = map.getBounds(), zoom = map.getZoom(), marginRatio = this.clusterMargin / this.Cluster.Size;
 
         var southWest = bounds.getSouthWest(), northEast = bounds.getNorthEast();
 
-        var t = +new Date();
         var clusters = this.Cluster.ProcessView({
             minLat: southWest.lat,
             minLng: southWest.lng,
             maxLat: northEast.lat,
             maxLng: northEast.lng
         });
-        console.log("time: ", (+new Date()) - t);
 
         var objectsOnMap = this._objectsOnMap, newObjectsOnMap = [];
 
@@ -352,17 +409,21 @@ var PruneClusterForLeaflet = L.Class.extend({
             objectsOnMap[i]._removeFromMap = true;
         }
 
+        var opacityUpdateList = [];
+
         clusters.forEach(function (cluster) {
             var m = undefined;
 
-            var position = new L.LatLng(cluster.averagePosition.lat, cluster.averagePosition.lng);
+            var latMargin = (cluster.bounds.maxLat - cluster.bounds.minLat) * marginRatio, lngMargin = (cluster.bounds.maxLng - cluster.bounds.minLng) * marginRatio;
+
+            var position = new L.LatLng(Math.max(Math.min(cluster.averagePosition.lat, cluster.bounds.maxLat - latMargin), cluster.bounds.minLat + latMargin), Math.max(Math.min(cluster.averagePosition.lng, cluster.bounds.maxLng - lngMargin), cluster.bounds.minLng + lngMargin));
 
             var oldMarker = cluster.data._leafletMarker;
             if (oldMarker) {
                 if (cluster.population === 1 && cluster.data._leafletOldPopulation === 1) {
                     oldMarker.setLatLng(position);
                     m = oldMarker;
-                } else if (cluster.population > 1 && cluster.data._leafletOldPopulation > 1) {
+                } else if (cluster.population > 1 && cluster.data._leafletOldPopulation > 1 && oldMarker._zoomLevel === zoom) {
                     oldMarker.setLatLng(position);
                     oldMarker.setIcon(_this.BuildLeafletClusterIcon(cluster));
                     cluster.data._leafletOldPopulation = cluster.population;
@@ -372,24 +433,43 @@ var PruneClusterForLeaflet = L.Class.extend({
 
             if (!m) {
                 if (cluster.population === 1) {
-                    m = _this.BuildLeafletMarker(cluster.marker, position);
+                    m = _this.BuildLeafletMarker(cluster.lastMarker, position);
                 } else {
                     m = _this.BuildLeafletCluster(cluster, position);
                 }
                 m.addTo(map);
+                m.setOpacity(0);
+                opacityUpdateList.push(m);
+
                 cluster.data._leafletMarker = m;
                 cluster.data._leafletOldPopulation = cluster.population;
             }
 
+            m._zoomLevel = zoom;
             m._removeFromMap = false;
             newObjectsOnMap.push(m);
         });
 
+        window.setTimeout(function () {
+            for (i = 0, l = opacityUpdateList.length; i < l; ++i) {
+                opacityUpdateList[i].setOpacity(1);
+            }
+        }, 1);
+
+        var toRemove = [];
         for (i = 0, l = objectsOnMap.length; i < l; ++i) {
             if (objectsOnMap[i]._removeFromMap) {
-                map.removeLayer(objectsOnMap[i]);
+                objectsOnMap[i].setOpacity(0);
+                toRemove.push(objectsOnMap[i]);
             }
-            objectsOnMap[i]._removeFromMap = true;
+        }
+
+        if (toRemove.length > 0) {
+            window.setTimeout(function () {
+                for (i = 0, l = toRemove.length; i < l; ++i) {
+                    map.removeLayer(toRemove[i]);
+                }
+            }, 300);
         }
 
         this._objectsOnMap = newObjectsOnMap;
