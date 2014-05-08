@@ -37,12 +37,12 @@ For example, you may want to add more importance to a marker representing an inc
 
 When you set categories to your markers, a small object representing the number of markers for each category is attached with the clusters. This way, you can create cluster icons adapted to their content.
 
+#### Dynamic cluster size
+
+The size of cluster can be adjusted on the fly *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
+
 ### TODO list
 
- - [ ] Animations
  - [ ] Tests
  - [ ] Documentation
  - [ ] Beautiful examples
- - [ ] Implement the cluster anti-overlapping (when their positions are very close)
- - [x] **JavaScript build**
-
