@@ -17,12 +17,12 @@
 </head>
 <body>
 <div id="map"></div>
-
+<a href="#" id="delete">Delete</a>
 <script>
     var map = L.map("map", {
         attributionControl: false,
         zoomControl: false
-    }).setView(new L.LatLng(59.911111, 10.752778), 15);
+    }).setView(new L.LatLng(59.911111, 10.752778), 12);
 
     L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
         detectRetina: true,
@@ -30,9 +30,9 @@
     }).addTo(map);
 
     var leafletView = new PruneClusterForLeaflet();
-    leafletView.Cluster.Size = 160;
+     leafletView.Cluster.Size = 300;
 
-    var size = 1000;
+    var size = 10000;
     var markers = [];
     for (var i = 0; i < size; ++i) {
         var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * Math.random() * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * Math.random() * 0.00002 * size);
@@ -53,6 +53,15 @@
     }, 500);
 
     map.addLayer(leafletView);
+
+    document.getElementById('delete').onclick = function () {
+		if (size >= 1000) {
+			var deleteList = markers.splice(0, 1000);
+			leafletView.RemoveMarkers(deleteList);
+			size -= 1000;
+		}
+	    return false;
+    };
 </script>
 </body>
 </html>

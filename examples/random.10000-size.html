@@ -17,22 +17,21 @@
 </head>
 <body>
 <div id="map"></div>
-
+<div href="#" id="size">Cluster size: <input type="range" value="160" min="25" max="500" step="1" id="sizeInput"/><span id="currentSize">160</span></div>
 <script>
     var map = L.map("map", {
         attributionControl: false,
         zoomControl: false
-    }).setView(new L.LatLng(59.911111, 10.752778), 15);
+    }).setView(new L.LatLng(59.911111, 10.752778), 12);
 
     L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
         detectRetina: true,
         maxNativeZoom: 17
     }).addTo(map);
 
-    var leafletView = new PruneClusterForLeaflet();
-    leafletView.Cluster.Size = 160;
+    var leafletView = new PruneClusterForLeaflet(160);
 
-    var size = 1000;
+    var size = 10000;
     var markers = [];
     for (var i = 0; i < size; ++i) {
         var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * Math.random() * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * Math.random() * 0.00002 * size);
@@ -41,7 +40,13 @@
         leafletView.RegisterMarker(marker);
     }
 
+    var lastUpdate = 0;
     window.setInterval(function () {
+	    var now = +new Date();
+	    if ((now - lastUpdate) < 400) {
+	    	return;
+	    }
+
         for (i = 0; i < size / 2; ++i) {
             var coef = i < size / 8 ? 10 : 1;
             var ll = markers[i].position;
@@ -50,9 +55,26 @@
         }
 
         leafletView.ProcessView();
+	    lastUpdate = now;
     }, 500);
 
     map.addLayer(leafletView);
+
+    var currentSizeSpan = document.getElementById('currentSize');
+
+	var updateSize = function () {
+    	leafletView.Cluster.Size = parseInt(this.value);
+		currentSizeSpan.firstChild.data = this.value;
+
+	    var now = +new Date();
+	    if ((now - lastUpdate) < 400) {
+	    	return;
+	    }
+		leafletView.ProcessView();
+		lastUpdate = now;
+	};
+    document.getElementById('sizeInput').onchange = updateSize; 
+    document.getElementById('sizeInput').oninput = updateSize; 
 </script>
 </body>
 </html>
