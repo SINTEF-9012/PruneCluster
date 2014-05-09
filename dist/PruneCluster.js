@@ -404,14 +404,12 @@ var PruneClusterForLeaflet = L.Class.extend({
 
         var southWest = bounds.getSouthWest(), northEast = bounds.getNorthEast();
 
-        var t = +new Date();
         var clusters = this.Cluster.ProcessView({
             minLat: southWest.lat,
             minLng: southWest.lng,
             maxLat: northEast.lat,
             maxLng: northEast.lng
         });
-        console.log("time: ", (+new Date()) - t);
 
         var objectsOnMap = this._objectsOnMap, newObjectsOnMap = [];
 
