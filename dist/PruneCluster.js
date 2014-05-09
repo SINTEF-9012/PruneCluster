@@ -206,7 +206,7 @@ var PruneCluster;
 
             var markers = this._markers, clusters = this._clusters;
 
-            var startClustersIndex = 0;
+            var workingClusterList = clusters.slice(0);
 
             for (var i = firstIndex, l = markers.length; i < l; ++i) {
                 var marker = markers[i], markerPosition = marker.position;
@@ -218,8 +218,15 @@ var PruneCluster;
                 if (markerPosition.lat > extendedBounds.minLat && markerPosition.lat < extendedBounds.maxLat) {
                     var clusterFound = false, cluster;
 
-                    for (var j = startClustersIndex, ll = clusters.length; j < ll; ++j) {
-                        cluster = clusters[j];
+                    for (var j = 0, ll = workingClusterList.length; j < ll; ++j) {
+                        cluster = workingClusterList[j];
+
+                        if (cluster.bounds.maxLng < marker.position.lng) {
+                            workingClusterList.splice(j, 1);
+                            --j;
+                            --ll;
+                            continue;
+                        }
 
                         if (checkPositionInsideBounds(markerPosition, cluster.bounds)) {
                             cluster.AddMarker(marker);
@@ -233,6 +240,7 @@ var PruneCluster;
                         cluster = new Cluster(marker);
                         cluster.ComputeBounds(this);
                         clusters.push(cluster);
+                        workingClusterList.push(cluster);
                     }
                 }
             }
@@ -396,12 +404,14 @@ var PruneClusterForLeaflet = L.Class.extend({
 
         var southWest = bounds.getSouthWest(), northEast = bounds.getNorthEast();
 
+        var t = +new Date();
         var clusters = this.Cluster.ProcessView({
             minLat: southWest.lat,
             minLng: southWest.lng,
             maxLat: northEast.lat,
             maxLng: northEast.lng
         });
+        console.log("time: ", (+new Date()) - t);
 
         var objectsOnMap = this._objectsOnMap, newObjectsOnMap = [];
 

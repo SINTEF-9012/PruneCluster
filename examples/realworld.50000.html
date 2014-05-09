@@ -29,7 +29,7 @@
         maxNativeZoom: 17
     }).addTo(map);
 
-    var leafletView = new PruneClusterForLeaflet(150);
+    var leafletView = new PruneClusterForLeaflet(165);
 
     for (var i = 0, l = addressPoints.length; i < l; ++i) {
         leafletView.RegisterMarker(new PruneCluster.Marker(addressPoints[i][0], addressPoints[i][1]));
