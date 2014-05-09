@@ -45,4 +45,5 @@ The size of cluster can be adjusted on the fly *([Example](http://sintef-9012.gi
 
  - [ ] Tests
  - [ ] Documentation
+ - [ ] Stable alone markers (anti-overlaping improvement needed)
  - [ ] Beautiful examples
