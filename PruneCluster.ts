@@ -281,7 +281,7 @@ module PruneCluster {
 
 //			var cpt = 0;
 
-			var startClustersIndex = 0;
+			var workingClusterList = clusters.slice(0);
 
 			// For every markers in the list
 			for (var i = firstIndex, l = markers.length; i < l; ++i) {
@@ -296,26 +296,26 @@ module PruneCluster {
 					break;
 				}
 
+
 				// If the marker is inside the view
 				if (markerPosition.lat > extendedBounds.minLat &&
 					markerPosition.lat < extendedBounds.maxLat) {
 
-					var clusterFound = false, cluster: Cluster; 
+					var clusterFound = false, cluster: Cluster;
 
 					// For every active cluster
-					for (var j = startClustersIndex, ll = clusters.length; j < ll; ++j) {
-						cluster = clusters[j];
+					for (var j = 0, ll = workingClusterList.length; j < ll; ++j) {
+						cluster = workingClusterList[j];
 
 						// If the cluster is far away the current marker
 						// we can remove it from the list of active clusters
 						// because we will never reach it again
-						// TODO fix it
-//						if (cluster.bounds.maxLng < marker.position.lng) {
-							// The list of cluster is sorted so we can use the
-							// start index in order to skip it
-//							++startClustersIndex;
-//							continue;
-//						}
+						if (cluster.bounds.maxLng < marker.position.lng) {
+							workingClusterList.splice(j, 1);
+							--j;
+							--ll;
+							continue;
+						}
 
 						if (checkPositionInsideBounds(markerPosition, cluster.bounds)) {
 							cluster.AddMarker(marker);
@@ -325,12 +325,14 @@ module PruneCluster {
 						}
 					}
 
+
 					// If the marker doesn't fit in any cluster,
 					// we must create a brand new cluster.
 					if (!clusterFound) {
 						cluster = new Cluster(marker);
 						cluster.ComputeBounds(this);
 						clusters.push(cluster);
+						workingClusterList.push(cluster);
 					}
 					
 //					++cpt;
