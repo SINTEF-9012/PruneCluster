@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Realworld 50k</title>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+	<script src="realworld.50000.1.js"></script>
+	<script src="realworld.50000.2.js"></script>
+
+    <link rel="stylesheet" href="examples.css"/>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView(new L.LatLng(59.911111, 10.752778), 17);
+
+    L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    var leafletView = new PruneClusterForLeaflet();
+    leafletView.Cluster.Size = 160;
+
+    var marker = new PruneCluster.Marker(59.91111, 10.752778);
+    leafletView.RegisterMarker(marker);
+
+    window.setInterval(function () {
+        marker.position.lng += 0.0001;
+        leafletView.ProcessView();
+    }, 500);
+
+    map.addLayer(leafletView);
+</script>
+</body>
+</html>
