@@ -15,8 +15,8 @@ module PruneCluster {
 
 
 
-var PruneClusterForLeaflet = L.Class.extend({
-	initialize: function(size: number = 160, clusterMargin: number = 20) {
+var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
+	initialize: function(size: number = 160, clusterMargin: number = 10) {
 		this.Cluster = new PruneCluster.PruneCluster();
 		this.Cluster.Size = size;
 		this.clusterMargin = Math.min(clusterMargin, size / 4);
@@ -179,7 +179,7 @@ var PruneClusterForLeaflet = L.Class.extend({
             lngMargin = (cluster.bounds.maxLng - cluster.bounds.minLng) * marginRatio;
 
             if (cluster.data._leafletCollision) {
-
+                cluster.data._leafletCollision = false;
                 position = new L.LatLng(
                     Math.max(
                         Math.min(cluster.averagePosition.lat, cluster.bounds.maxLat - latMargin),
