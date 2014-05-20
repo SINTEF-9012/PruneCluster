@@ -317,7 +317,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
     initialize: function (size, clusterMargin) {
         var _this = this;
         if (typeof size === "undefined") { size = 160; }
-        if (typeof clusterMargin === "undefined") { clusterMargin = 10; }
+        if (typeof clusterMargin === "undefined") { clusterMargin = 20; }
         this.Cluster = new PruneCluster.PruneCluster();
         this.Cluster.Size = size;
         this.clusterMargin = Math.min(clusterMargin, size / 4);

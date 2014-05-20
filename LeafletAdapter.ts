@@ -16,7 +16,7 @@ module PruneCluster {
 
 
 var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
-	initialize: function(size: number = 160, clusterMargin: number = 10) {
+	initialize: function(size: number = 160, clusterMargin: number = 20) {
 		this.Cluster = new PruneCluster.PruneCluster();
 		this.Cluster.Size = size;
 		this.clusterMargin = Math.min(clusterMargin, size / 4);
