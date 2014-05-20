@@ -130,23 +130,62 @@ var PruneClusterForLeaflet = L.Class.extend({
 			objectsOnMap[i]._removeFromMap = true;
 		}
 
-		var opacityUpdateList = [];
+        var opacityUpdateList = [];
+
+        // Anti collapsing system
+        var workingList: PruneCluster.Cluster[] = [];
+
+        for (i = 0, l = clusters.length; i < l; ++i) {
+            var icluster = clusters[i];
+
+			var latMargin = (icluster.bounds.maxLat - icluster.bounds.minLat) * marginRatio,
+                lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
+
+            for (var j = 0, ll = workingList.length; j < ll; ++j) {
+                var c = workingList[j];
+                if (c.bounds.maxLng < icluster.bounds.minLng) {
+                    workingList.splice(j, 1);
+                    --j;
+                    --ll;
+                    continue;
+                }
+
+                var oldMaxLng = c.averagePosition.lng + lngMargin,
+                    oldMinLat = c.averagePosition.lat - latMargin,
+                    oldMaxLat = c.averagePosition.lat + latMargin,
+                    newMinLng = icluster.averagePosition.lng - lngMargin,
+                    newMinLat = icluster.averagePosition.lat - latMargin,
+                    newMaxLat = icluster.averagePosition.lat + latMargin;
+                 
+                if (oldMaxLng > newMinLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat ) {
+                    icluster.data._collision = true;
+                    c.data._collision = true;
+                    break;
+                }
+            }
+
+            workingList.push(icluster);
+        }
 
 		clusters.forEach((cluster: PruneCluster.Cluster) => {
 			var m = undefined;
+		    var position: L.LatLng;
 
-			// Anti collapsing system
-			var latMargin = (cluster.bounds.maxLat - cluster.bounds.minLat)*marginRatio,
-				lngMargin = (cluster.bounds.maxLng - cluster.bounds.minLng)*marginRatio;
+            if (cluster.data._collision) {
+                latMargin = (cluster.bounds.maxLat - cluster.bounds.minLat) * marginRatio;
+                lngMargin = (cluster.bounds.maxLng - cluster.bounds.minLng) * marginRatio;
 
-			var position = new L.LatLng(
-				Math.max(
-					Math.min(cluster.averagePosition.lat, cluster.bounds.maxLat - latMargin),
-					cluster.bounds.minLat + latMargin),
-				Math.max(
-					Math.min(cluster.averagePosition.lng, cluster.bounds.maxLng - lngMargin),
-					cluster.bounds.minLng + lngMargin)
-				);
+                position = new L.LatLng(
+                    Math.max(
+                        Math.min(cluster.averagePosition.lat, cluster.bounds.maxLat - latMargin),
+                        cluster.bounds.minLat + latMargin),
+                    Math.max(
+                        Math.min(cluster.averagePosition.lng, cluster.bounds.maxLng - lngMargin),
+                        cluster.bounds.minLng + lngMargin)
+                );
+            } else {
+                position = new L.LatLng(cluster.averagePosition.lat, cluster.averagePosition.lng);
+            }
 
 			var oldMarker = cluster.data._leafletMarker;
 			if (oldMarker) {
