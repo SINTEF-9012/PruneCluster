@@ -414,17 +414,53 @@ var PruneClusterForLeaflet = L.Class.extend({
         var objectsOnMap = this._objectsOnMap, newObjectsOnMap = [];
 
         for (var i = 0, l = objectsOnMap.length; i < l; ++i) {
-            objectsOnMap[i]._removeFromMap = true;
+            objectsOnMap[i].data._leafletMarker._removeFromMap = true;
         }
+
+        var clusterCreationList = [];
 
         var opacityUpdateList = [];
 
+        var workingList = [];
+
+        for (i = 0, l = clusters.length; i < l; ++i) {
+            var icluster = clusters[i];
+
+            var latMargin = (icluster.bounds.maxLat - icluster.bounds.minLat) * marginRatio, lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
+
+            for (var j = 0, ll = workingList.length; j < ll; ++j) {
+                var c = workingList[j];
+                if (c.bounds.maxLng < icluster.bounds.minLng) {
+                    workingList.splice(j, 1);
+                    --j;
+                    --ll;
+                    continue;
+                }
+
+                var oldMaxLng = c.averagePosition.lng + lngMargin, oldMinLat = c.averagePosition.lat - latMargin, oldMaxLat = c.averagePosition.lat + latMargin, newMinLng = icluster.averagePosition.lng - lngMargin, newMinLat = icluster.averagePosition.lat - latMargin, newMaxLat = icluster.averagePosition.lat + latMargin;
+
+                if (oldMaxLng > newMinLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat) {
+                    icluster.data._leafletCollision = true;
+                    c.data._leafletCollision = true;
+                    break;
+                }
+            }
+
+            workingList.push(icluster);
+        }
+
         clusters.forEach(function (cluster) {
             var m = undefined;
+            var position;
 
-            var latMargin = (cluster.bounds.maxLat - cluster.bounds.minLat) * marginRatio, lngMargin = (cluster.bounds.maxLng - cluster.bounds.minLng) * marginRatio;
+            latMargin = (cluster.bounds.maxLat - cluster.bounds.minLat) * marginRatio;
+            lngMargin = (cluster.bounds.maxLng - cluster.bounds.minLng) * marginRatio;
 
-            var position = new L.LatLng(Math.max(Math.min(cluster.averagePosition.lat, cluster.bounds.maxLat - latMargin), cluster.bounds.minLat + latMargin), Math.max(Math.min(cluster.averagePosition.lng, cluster.bounds.maxLng - lngMargin), cluster.bounds.minLng + lngMargin));
+            if (cluster.data._leafletCollision) {
+                position = new L.LatLng(Math.max(Math.min(cluster.averagePosition.lat, cluster.bounds.maxLat - latMargin), cluster.bounds.minLat + latMargin), Math.max(Math.min(cluster.averagePosition.lng, cluster.bounds.maxLng - lngMargin), cluster.bounds.minLng + lngMargin));
+            } else {
+                position = new L.LatLng(cluster.averagePosition.lat, cluster.averagePosition.lng);
+            }
 
             var oldMarker = cluster.data._leafletMarker;
             if (oldMarker) {
@@ -440,37 +476,106 @@ var PruneClusterForLeaflet = L.Class.extend({
             }
 
             if (!m) {
-                if (cluster.population === 1) {
-                    m = _this.BuildLeafletMarker(cluster.lastMarker, position);
-                } else {
-                    m = _this.BuildLeafletCluster(cluster, position);
-                }
-                m.addTo(map);
-                m.setOpacity(0);
-                opacityUpdateList.push(m);
+                clusterCreationList.push(cluster);
 
-                cluster.data._leafletMarker = m;
+                cluster.data._leafletPosition = position;
                 cluster.data._leafletOldPopulation = cluster.population;
+            } else {
+                m._removeFromMap = false;
+                m._zoomLevel = zoom;
+                m._population = cluster.population;
+                cluster.data._leafletMarker = m;
+                cluster.data._leafletPosition = position;
+                newObjectsOnMap.push(cluster);
+            }
+        });
+
+        var toRemove = [];
+        for (i = 0, l = objectsOnMap.length; i < l; ++i) {
+            icluster = objectsOnMap[i];
+            var data = icluster.data, marker = data._leafletMarker;
+
+            if (data._leafletMarker._removeFromMap) {
+                var remove = true;
+
+                if (marker._zoomLevel === zoom) {
+                    var pa = icluster.averagePosition;
+
+                    latMargin = (icluster.bounds.maxLat - icluster.bounds.minLat) * marginRatio, lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
+
+                    for (j = 0, ll = clusterCreationList.length; j < ll; ++j) {
+                        var jcluster = clusterCreationList[j];
+                        var pb = jcluster.averagePosition;
+
+                        var oldMinLng = pa.lng - lngMargin, newMaxLng = pb.lng + lngMargin;
+
+                        oldMaxLng = pa.lng + lngMargin;
+                        oldMinLat = pa.lat - latMargin;
+                        oldMaxLat = pa.lat + latMargin;
+                        newMinLng = pb.lng - lngMargin;
+                        newMinLat = pb.lat - latMargin;
+                        newMaxLat = pb.lat + latMargin;
+
+                        if (oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat) {
+                            if (marker._population === 1 && jcluster.population === 1) {
+                                marker.setLatLng(jcluster.data._leafletPosition);
+                                remove = false;
+                            } else if (marker._population > 1 && jcluster.population > 1) {
+                                marker.setLatLng(jcluster.data._leafletPosition);
+                                remove = false;
+                                marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
+                                jcluster.data._leafletOldPopulation = jcluster.population;
+                                marker._population = jcluster.population;
+                            }
+
+                            if (!remove) {
+                                jcluster.data._leafletMarker = marker;
+                                newObjectsOnMap.push(jcluster);
+
+                                clusterCreationList.splice(j, 1);
+                                --j;
+                                --ll;
+
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (remove) {
+                    data._leafletMarker.setOpacity(0);
+                    toRemove.push(data._leafletMarker);
+                }
+            }
+        }
+
+        for (i = 0, l = clusterCreationList.length; i < l; ++i) {
+            icluster = clusterCreationList[i];
+            var iposition = icluster.data._leafletPosition;
+
+            var creationMarker;
+            if (icluster.population === 1) {
+                creationMarker = this.BuildLeafletMarker(icluster.lastMarker, iposition);
+            } else {
+                creationMarker = this.BuildLeafletCluster(icluster, iposition);
             }
 
-            m._zoomLevel = zoom;
-            m._removeFromMap = false;
-            newObjectsOnMap.push(m);
-        });
+            creationMarker.addTo(map);
+            creationMarker.setOpacity(0);
+            creationMarker._zoomLevel = zoom;
+            creationMarker._population = icluster.population;
+            opacityUpdateList.push(creationMarker);
+
+            icluster.data._leafletMarker = creationMarker;
+
+            newObjectsOnMap.push(icluster);
+        }
 
         window.setTimeout(function () {
             for (i = 0, l = opacityUpdateList.length; i < l; ++i) {
                 opacityUpdateList[i].setOpacity(1);
             }
         }, 1);
-
-        var toRemove = [];
-        for (i = 0, l = objectsOnMap.length; i < l; ++i) {
-            if (objectsOnMap[i]._removeFromMap) {
-                objectsOnMap[i].setOpacity(0);
-                toRemove.push(objectsOnMap[i]);
-            }
-        }
 
         if (toRemove.length > 0) {
             window.setTimeout(function () {
