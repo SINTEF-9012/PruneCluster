@@ -13,7 +13,8 @@ module PruneCluster {
 
         BuildLeafletCluster: (cluster: Cluster, position: L.LatLng) => L.ILayer;
 	    BuildLeafletClusterIcon: (cluster: Cluster) => L.Icon;
-        BuildLeafletMarker: (marker: Marker, position: L.LatLng) => L.ILayer;
+        BuildLeafletMarker: (marker: Marker, position: L.LatLng) => L.Marker;
+        PrepareLeafletMarker: (marker: L.Marker, data: {}) => void;
 	}
 }
 
@@ -36,7 +37,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
         this.spiderfier = new PruneClusterLeafletSpiderfier(this);
 	},
 
-	RegisterMarker: function(marker: PruneCluster.Marker) {
+    RegisterMarker: function (marker: PruneCluster.Marker) {
 		this.Cluster.RegisterMarker(marker);
 	},
 
@@ -95,9 +96,14 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 		});
 	},
 
-	BuildLeafletMarker: function(marker: PruneCluster.Marker, position: L.LatLng): L.ILayer {
-		return new L.Marker(position);
-	},
+    BuildLeafletMarker: function (marker: PruneCluster.Marker, position: L.LatLng): L.Marker {
+        var m = new L.Marker(position);
+        this.PrepareLeafletMarker(m, marker.data);
+        return m;
+    },
+
+    PrepareLeafletMarker: function (marker: L.Marker, data: {}) {
+    },
 
 	onAdd: function(map: L.Map) {
 		this._map = map;
@@ -232,7 +238,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 
             var oldMarker = cluster.data._leafletMarker;
 			if (oldMarker) {
-				if (cluster.population === 1 && cluster.data._leafletOldPopulation === 1) {
+                if (cluster.population === 1 && cluster.data._leafletOldPopulation === 1) {
+                    if (oldMarker._zoomLevel !== zoom) {
+                        this.PrepareLeafletMarker(oldMarker, cluster.lastMarker.data);
+                    }
                     oldMarker.setLatLng(position);
 					m = oldMarker;
                 } else if (cluster.population > 1 && cluster.data._leafletOldPopulation > 1 && (oldMarker._zoomLevel === zoom ||
@@ -298,7 +307,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
                         if (oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat) {
 
                             if (marker._population === 1 && jcluster.population === 1) {
-                                // TODO manage icon and popup or identify the type of element
+                                this.PrepareLeafletMarker(marker, jcluster.lastMarker.data);
                                 marker.setLatLng(jcluster.data._leafletPosition);
                                 remove = false;
                             } else if (marker._population > 1 && jcluster.population > 1) {
@@ -337,7 +346,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 
             var creationMarker: any;
             if (icluster.population === 1) {
-               creationMarker = this.BuildLeafletMarker(icluster.lastMarker, iposition);
+                creationMarker = this.BuildLeafletMarker(icluster.lastMarker, iposition);
             } else {
                creationMarker = this.BuildLeafletCluster(icluster, iposition);
             }
