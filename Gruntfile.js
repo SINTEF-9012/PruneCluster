@@ -14,7 +14,7 @@ module.exports = function(grunt) {
 		},
 		ts: {
 			build: {
-				src:["PruneCluster.ts", "LeafletAdapter.ts"],
+				src:["PruneCluster.ts", "LeafletAdapter.ts", "LeafletSpiderfier.ts"],
 				reference: "dist/PruneCluster.d.ts",
 				out:'./dist/PruneCluster.js',
 				// outDir:'build',

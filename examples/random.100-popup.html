@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Realworld 50k</title>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+	<script src="realworld.50000.1.js"></script>
+	<script src="realworld.50000.2.js"></script>
+
+    <link rel="stylesheet" href="examples.css"/>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView(new L.LatLng(59.911111, 10.752778), 17);
+
+    L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    var leafletView = new PruneClusterForLeaflet();
+    leafletView.Cluster.Size = 160;
+
+    var size = 100;
+    var markers = [];
+    for (var i = 0; i < size; ++i) {
+        var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * 0.00002 * size, {
+            name: "Roger "+i
+        });
+
+        markers.push(marker);
+        leafletView.RegisterMarker(marker);
+    }
+
+    leafletView.BuildLeafletMarker = function(marker, position) {
+        var m = new L.Marker(position);
+        m.bindPopup(marker.data.name);
+        return m;
+    }
+
+    window.setInterval(function () {
+        for (i = 0; i < size / 2; ++i) {
+            var coef = i < size / 8 ? 10 : 1;
+            var ll = markers[i].position;
+            ll.lat += (Math.random() - 0.5) * 0.00001 * coef;
+            ll.lng += (Math.random() - 0.5) * 0.00002 * coef;
+        }
+
+        leafletView.ProcessView();
+    }, 500);
+
+    map.addLayer(leafletView);
+</script>
+</body>
+</html>

@@ -30,7 +30,13 @@
 }
 
 .prunecluster-small div {
+	width: 28px;
+	height: 28px;
 	background-color: rgba(110, 204, 57, 0.6);
+}
+
+.prunecluster-small div span {
+	line-height: 28px;
 }
 
 .prunecluster-medium {
@@ -46,7 +52,13 @@
 }
 
 .prunecluster-large div {
+	width: 34px;
+	height: 34px;
 	background-color: rgba(241, 128, 23, 0.6);
+}
+
+.prunecluster-large div span {
+	line-height: 34px;
 }
 div#size, a#delete {
 	position: absolute;

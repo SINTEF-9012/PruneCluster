@@ -58,8 +58,10 @@ module PruneCluster {
 
 		public lastMarker: Marker;
 
-		constructor(marker: Marker) {
-			super();
+		constructor(marker?: Marker) {
+            super();
+
+            if (!marker) return;
 
 			this.lastMarker = marker;
 
@@ -145,7 +147,39 @@ module PruneCluster {
 				minLng: a.lng,
 				maxLng: b.lng
 			};
-		}
+        }
+
+        public ApplyCluster(newCluster: Cluster) {
+            var weight = newCluster.totalWeight,
+				currentTotalWeight = this.totalWeight,
+				newWeight = weight + currentTotalWeight;
+
+			this.averagePosition.lat =
+			(this.averagePosition.lat * currentTotalWeight +
+				newCluster.averagePosition.lat * weight) / newWeight;
+
+			this.averagePosition.lng =
+			(this.averagePosition.lng * currentTotalWeight +
+				newCluster.averagePosition.lng * weight) / newWeight;
+
+			this.population += newCluster.population;
+            this.totalWeight = newWeight;
+
+            this.bounds.minLat = Math.min(this.bounds.minLat, newCluster.bounds.minLat);
+            this.bounds.minLng = Math.min(this.bounds.minLng, newCluster.bounds.minLng);
+            this.bounds.maxLat = Math.max(this.bounds.maxLat, newCluster.bounds.maxLat);
+            this.bounds.maxLng = Math.max(this.bounds.maxLng, newCluster.bounds.maxLng);
+
+            for (var category in newCluster.stats) {
+                if (newCluster.stats.hasOwnProperty(category)) {
+                    if (this.stats.hasOwnProperty(category)) {
+                       this.stats[category] = newCluster.stats[category];
+                    } else {
+                        this.stats[category] = newCluster.stats[category];
+                    }
+                }
+            }
+        }
 	}
 
 	function checkPositionInsideBounds(a: Position, b: Bounds): boolean {
@@ -176,8 +210,8 @@ module PruneCluster {
 		// Cluster size in (in pixels)
 		public Size: number = 166;
 
-		// View padding (extended size of the view)
-		public ViewPadding: number = 0.13;
+        // View padding (extended size of the view)
+        public ViewPadding: number = 0.2;
 
 		// These methods should be defined by the user
 		public Project: (lat:number, lng:number) => Point;
@@ -272,7 +306,7 @@ module PruneCluster {
 			this._resetClusterViews();
 
 			// Binary search for the first interesting marker
-			var firstIndex = this._indexLowerBoundLng(extendedBounds.minLng);
+            var firstIndex = this._indexLowerBoundLng(extendedBounds.minLng);
 			//console.log("Start index: ", firstIndex);
 
 			// Just some shortcuts
@@ -380,45 +414,66 @@ module PruneCluster {
 		// This method is a bit slow ( O(n)) because it's not worth to make
 		// system which will slow down all the clusters just to have
 		// this one fast
-		public FindMarkersBoundsInArea(area: Bounds): Bounds {
+	    public FindMarkersInArea(area: Bounds): Marker[] {
 			var aMinLat = area.minLat,
 				aMaxLat = area.maxLat,
 				aMinLng = area.minLng,
-				amaxLng = area.maxLng,
-				
-				rMinLat = Number.MAX_VALUE,
-				rMaxLat = Number.MIN_VALUE,
-				rMinLng = Number.MAX_VALUE,
-				rMaxLng = Number.MIN_VALUE,
-				
-				markers = this._markers,
-				nbMarkersInArea = 0;
+                aMaxLng = area.maxLng,
 
-			for (var i = 0, l = markers.length; i < l; ++i) {
-				var pos = markers[i].position;
+                markers = this._markers,
+                
+                result = [];
+
+            var firstIndex = this._indexLowerBoundLng(aMinLng);
+
+			for (var i = firstIndex, l = markers.length; i < l; ++i) {
+                var pos = markers[i].position;
+
+				if (pos.lng > aMaxLng) {
+					break;
+                }
+
 				if (pos.lat >= aMinLat && pos.lat <= aMaxLat &&
-					pos.lng >= aMinLng && pos.lng <= amaxLng) {
+					pos.lng >= aMinLng) {
 
-					++nbMarkersInArea;
-
-					if (pos.lat < rMinLat) rMinLat = pos.lat;
-					if (pos.lat > rMaxLat) rMaxLat = pos.lat;
-					if (pos.lng < rMinLng) rMinLng = pos.lng;
-					if (pos.lng > rMaxLng) rMaxLng = pos.lng;
+				    result.push(markers[i]);
 				}
-			}
+            }
 
-			if (nbMarkersInArea) {
-				return {
-					minLat: rMinLat,
-					maxLat: rMaxLat,
-					minLng: rMinLng,
-					maxLng: rMaxLng
-				};
-			}
+	        return result;
+	    }
 
-			return null;
+	    public ComputeBounds(markers: Marker[]): Bounds {
+				
+            if (!markers || !markers.length) {
+                return null;
+            }
+
+            var rMinLat = Number.MAX_VALUE,
+                rMaxLat = -Number.MAX_VALUE,
+                rMinLng = Number.MAX_VALUE,
+                rMaxLng = -Number.MAX_VALUE;
+
+            for (var i = 0, l = markers.length; i < l; ++i) {
+                var pos = markers[i].position;
+
+                if (pos.lat < rMinLat) rMinLat = pos.lat;
+                if (pos.lat > rMaxLat) rMaxLat = pos.lat;
+                if (pos.lng < rMinLng) rMinLng = pos.lng;
+                if (pos.lng > rMaxLng) rMaxLng = pos.lng;
+            }
+
+            return {
+                minLat: rMinLat,
+                maxLat: rMaxLat,
+                minLng: rMinLng,
+                maxLng: rMaxLng
+            };
 		}
+
+        public FindMarkersBoundsInArea(area: Bounds): Bounds {
+            return this.ComputeBounds(this.FindMarkersInArea(area));
+        }
 
 	}
 }
