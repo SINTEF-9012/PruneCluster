@@ -29,18 +29,27 @@
         maxNativeZoom: 17
     }).addTo(map);
 
-    var leafletView = new PruneClusterForLeaflet();
-    leafletView.Cluster.Size = 120;
+    var leafletView = new PruneClusterForLeaflet(60);
 
-    var marker = new PruneCluster.Marker(59.91111, 10.752778);
+    var marker = new PruneCluster.Marker(59.91111, 10.752778, {num: "special"});
     leafletView.RegisterMarker(marker);
 
     var markers = [], size = 10;
     for (var i = 0; i < size;++i) {
-        var m = new PruneCluster.Marker(59.9111+i*0.001,10.75277+i*0.001);
+        var m = new PruneCluster.Marker(59.9111+i*0.001,10.75277+i*0.001, {num: i});
         markers.push(m);
         leafletView.RegisterMarker(m);
     }
+
+    leafletView.PrepareLeafletMarker = function(marker, data) {
+        var t = "Num: " + data.num;
+        if (marker.getPopup()) {
+            marker.setPopupContent(t);
+        } else {
+            marker.bindPopup(t);
+        }
+        console.log(data);
+    };
 
     window.setInterval(function () {
         marker.position.lng += 0.0001;

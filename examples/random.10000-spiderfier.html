@@ -17,7 +17,7 @@
 </head>
 <body>
 <div id="map"></div>
-<a href="#" id="delete">Delete</a>
+
 <script>
     var map = L.map("map", {
         attributionControl: false,
@@ -26,7 +26,7 @@
 
     L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
         detectRetina: true,
-        maxNativeZoom: 17
+        maxZoom: 15 // zoom limitation
     }).addTo(map);
 
     var leafletView = new PruneClusterForLeaflet();
@@ -52,15 +52,6 @@
     }, 500);
 
     map.addLayer(leafletView);
-
-    document.getElementById('delete').onclick = function () {
-		if (size >= 1000) {
-			var deleteList = markers.splice(0, 1000);
-			leafletView.RemoveMarkers(deleteList);
-			size -= 1000;
-		}
-	    return false;
-    };
 </script>
 </body>
 </html>
