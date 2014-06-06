@@ -1,11 +1,13 @@
-PruneCluster
+![PruneCluster](http://medias.master-bridge.eu/e30525b1a92f01204ac69039a642e370c85bf906.png)
 ============
 
 PruneCluster is a fast and realtime marker clustering library.
 
-It's compatible with [Leaflet](http://leafletjs.com/) and the goal is to provide the most of  [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster)'s features.
+It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster).
 
-### 60 000 markers over Oslo, clustered in 70ms
+ 
+*The library is designed for big data or live situations.*
+
 ![](http://medias.master-bridge.eu/resize/400/400/ac3faf9c2beba4376d8466f53405d330a9a7baab.png)
 
 ### Features
@@ -40,10 +42,3 @@ When you set categories to your markers, a small object representing the number 
 #### Dynamic cluster size
 
 The size of cluster can be adjusted on the fly *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
-
-### TODO list
-
- - [ ] Tests
- - [ ] Documentation
- - [ ] Stable alone markers (anti-overlaping improvement needed)
- - [ ] Beautiful examples
