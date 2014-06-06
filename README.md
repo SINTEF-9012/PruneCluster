@@ -8,7 +8,8 @@ It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet
  
 *The library is designed for big data or live situations.*
 
-![](http://medias.master-bridge.eu/resize/400/400/ac3faf9c2beba4376d8466f53405d330a9a7baab.png)
+![](http://medias.master-bridge.eu/resize/728/720/59dedba492400bfefddf3179fa83f18fbf4ee599.png)
+#### A lot of tweets over the world
 
 ### Features
 
