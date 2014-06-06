@@ -9,7 +9,7 @@ It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet
 *The library is designed for big data or live situations.*
 
 ![](http://medias.master-bridge.eu/resize/728/720/59dedba492400bfefddf3179fa83f18fbf4ee599.png)
-#### A lot of tweets over the world
+**A lot of tweets over the world**
 
 ### Features
 
