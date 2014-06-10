@@ -355,6 +355,10 @@ var PruneCluster;
         PruneCluster.prototype.FindMarkersBoundsInArea = function (area) {
             return this.ComputeBounds(this.FindMarkersInArea(area));
         };
+
+        PruneCluster.prototype.ComputeGlobalBounds = function () {
+            return this.ComputeBounds(this._markers);
+        };
         return PruneCluster;
     })();
     _PruneCluster.PruneCluster = PruneCluster;
@@ -680,6 +684,11 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         }
 
         this._objectsOnMap = newObjectsOnMap;
+    },
+    FitBounds: function () {
+        var bounds = this.Cluster.ComputeGlobalBounds();
+
+        this._map.fitBounds(new L.LatLngBounds(new L.LatLng(bounds.minLat, bounds.maxLng), new L.LatLng(bounds.maxLat, bounds.minLng)));
     }
 });
 var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({
@@ -695,7 +704,8 @@ var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({
         this._cluster = cluster;
         this._currentMarkers = [];
 
-        this._lines = L.multiPolyline([], { weight: 1.5, color: '#222' });
+        this._multiLines = !!L.multiPolyline;
+        this._lines = this._multiLines ? L.multiPolyline([], { weight: 1.5, color: '#222' }) : L.polyline([], { weight: 1.5, color: '#222' });
     },
     onAdd: function (map) {
         this._map = map;
@@ -718,7 +728,9 @@ var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({
         if (markers.length >= this._spiralCountTrigger) {
             points = this._generatePointsSpiral(markers.length, centerPoint);
         } else {
-            centerPoint.y += 10;
+            if (this._multiLines) {
+                centerPoint.y += 10;
+            }
             points = this._generatePointsCircle(markers.length, centerPoint);
         }
 

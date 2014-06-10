@@ -22,7 +22,10 @@ var PruneClusterLeafletSpiderfier = ((<any>L).Layer ? (<any>L).Layer : L.Class).
         this._cluster = cluster;
         this._currentMarkers = [];
 
-        this._lines = L.multiPolyline([], { weight: 1.5, color: '#222' });
+        this._multiLines = !!L.multiPolyline;
+        this._lines = this._multiLines ?
+            L.multiPolyline([], { weight: 1.5, color: '#222' }) :
+            L.polyline([], { weight: 1.5, color: '#222' });
     },
 
 	onAdd: function(map: L.Map) {
@@ -46,7 +49,9 @@ var PruneClusterLeafletSpiderfier = ((<any>L).Layer ? (<any>L).Layer : L.Class).
         if (markers.length >= this._spiralCountTrigger) {
             points = this._generatePointsSpiral(markers.length, centerPoint);
         } else {
-            centerPoint.y += 10; // center fix
+            if (this._multiLines) { // if multilines, leaflet < 0.8
+                centerPoint.y += 10; // center fix
+            }
             points = this._generatePointsCircle(markers.length, centerPoint);
         }
 

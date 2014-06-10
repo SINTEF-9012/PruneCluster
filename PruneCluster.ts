@@ -475,5 +475,9 @@ module PruneCluster {
             return this.ComputeBounds(this.FindMarkersInArea(area));
         }
 
+        public ComputeGlobalBounds(): Bounds {
+            return this.ComputeBounds(this._markers);
+        } 
+
 	}
 }

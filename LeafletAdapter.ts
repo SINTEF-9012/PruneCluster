@@ -10,6 +10,7 @@ module PruneCluster {
 		RegisterMarker: (marker: Marker) => void;
 		RemoveMarkers: (markers: Marker[]) => void;
         ProcessView: () => void;
+        FitBounds: () => void;
 
         BuildLeafletCluster: (cluster: Cluster, position: L.LatLng) => L.ILayer;
 	    BuildLeafletClusterIcon: (cluster: Cluster) => L.Icon;
@@ -110,7 +111,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 		map.on('movestart', this._moveStart, this);
         map.on('moveend', this._moveEnd, this);
 		map.on('zoomend', this._zoomStart, this);
-		map.on('zoomend', this._zoomEnd, this);
+        map.on('zoomend', this._zoomEnd, this);
         this.ProcessView();
 
 	    map.addLayer(this.spiderfier);
@@ -377,6 +378,13 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 		}
 				
 		this._objectsOnMap = newObjectsOnMap;
-	}
+	},
 
+    FitBounds: function() {
+        var bounds : PruneCluster.Bounds = this.Cluster.ComputeGlobalBounds();
+
+        this._map.fitBounds(new L.LatLngBounds(
+					new L.LatLng(bounds.minLat, bounds.maxLng),
+                    new L.LatLng(bounds.maxLat, bounds.minLng)));
+    }    
 });
