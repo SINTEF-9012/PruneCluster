@@ -38,7 +38,9 @@ For example, you may want to add more importance to a marker representing an inc
 
 #### Categories
 
-When you set categories to your markers, a small object representing the number of markers for each category is attached with the clusters. This way, you can create cluster icons adapted to their content.
+You can specify a category for the markers. Then a small object representing the number of markers for each category is attached to the clusters. This way, you can create cluster icons adapted to their content.
+
+The category can be a number or a string, but in order to minimize the performance cost, it's recommanded to use numbers between 0 and 7.
 
 #### Dynamic cluster size
 

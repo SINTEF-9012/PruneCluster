@@ -382,9 +382,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 
     FitBounds: function() {
         var bounds : PruneCluster.Bounds = this.Cluster.ComputeGlobalBounds();
-
-        this._map.fitBounds(new L.LatLngBounds(
-					new L.LatLng(bounds.minLat, bounds.maxLng),
-                    new L.LatLng(bounds.maxLat, bounds.minLng)));
+		if (bounds) {
+			this._map.fitBounds(new L.LatLngBounds(
+						new L.LatLng(bounds.minLat, bounds.maxLng),
+						new L.LatLng(bounds.maxLat, bounds.minLng)));
+		}
     }    
 });

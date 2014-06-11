@@ -44,16 +44,17 @@ var PruneCluster;
         function Cluster(marker) {
             _super.call(this);
 
+            this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
+            this.data = {};
+
             if (!marker)
                 return;
 
             this.lastMarker = marker;
 
-            this.stats = {};
-            this.data = {};
             this.population = 1;
 
-            if (marker.category) {
+            if (marker.category !== undefined) {
                 this.stats[marker.category] = 1;
             }
 
@@ -81,12 +82,8 @@ var PruneCluster;
             ++this.population;
             this.totalWeight = newWeight;
 
-            if (marker.category) {
-                if (this.stats.hasOwnProperty(marker.category)) {
-                    ++this.stats[marker.category];
-                } else {
-                    this.stats[marker.category] = 1;
-                }
+            if (marker.category !== undefined) {
+                this.stats[marker.category] = (this.stats[marker.category] + 1) || 1;
             }
         };
 
@@ -94,6 +91,7 @@ var PruneCluster;
             this.lastMarker = undefined;
             this.population = 0;
             this.totalWeight = 0;
+            this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
         };
 
         Cluster.prototype.ComputeBounds = function (cluster) {
@@ -131,7 +129,7 @@ var PruneCluster;
             for (var category in newCluster.stats) {
                 if (newCluster.stats.hasOwnProperty(category)) {
                     if (this.stats.hasOwnProperty(category)) {
-                        this.stats[category] = newCluster.stats[category];
+                        this.stats[category] += newCluster.stats[category];
                     } else {
                         this.stats[category] = newCluster.stats[category];
                     }
@@ -687,8 +685,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
     },
     FitBounds: function () {
         var bounds = this.Cluster.ComputeGlobalBounds();
-
-        this._map.fitBounds(new L.LatLngBounds(new L.LatLng(bounds.minLat, bounds.maxLng), new L.LatLng(bounds.maxLat, bounds.minLng)));
+        if (bounds) {
+            this._map.fitBounds(new L.LatLngBounds(new L.LatLng(bounds.minLat, bounds.maxLng), new L.LatLng(bounds.maxLat, bounds.minLng)));
+        }
     }
 });
 var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({

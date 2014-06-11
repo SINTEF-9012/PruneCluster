@@ -30,8 +30,8 @@ module PruneCluster {
 
 	export class Marker extends ClusterObject {
 
-		public category: string;
-		public weight:number;
+		public category: number;
+		public weight: number;
 
 		constructor(lat: number, lng: number, data: {} = {}) {
 			super();
@@ -52,7 +52,7 @@ module PruneCluster {
 		public population: number;
 
 		public averagePosition: Position;
-		public stats: { [category: string]: number };
+		public stats: number[];
 
 		public totalWeight: number;
 
@@ -61,15 +61,16 @@ module PruneCluster {
 		constructor(marker?: Marker) {
             super();
 
+			this.stats = [0,0,0,0,0,0,0,0];
+			this.data = {};
+
             if (!marker) return;
 
 			this.lastMarker = marker;
 
-			this.stats = {};
-			this.data = {};
 			this.population = 1;
 
-			if (marker.category) {
+			if (marker.category !== undefined) {
 				this.stats[marker.category] = 1;
 			}
 
@@ -108,12 +109,8 @@ module PruneCluster {
 			this.totalWeight = newWeight;
 
 			// Update the statistics if needed
-			if (marker.category) {
-				if (this.stats.hasOwnProperty(marker.category)) {
-					++this.stats[marker.category];
-				} else {
-					this.stats[marker.category] = 1;
-				}
+			if (marker.category !== undefined) {
+				this.stats[marker.category] = (this.stats[marker.category] + 1) || 1;
 			}
 		}
 
@@ -121,6 +118,7 @@ module PruneCluster {
 			this.lastMarker = undefined;
 			this.population = 0;
 			this.totalWeight = 0;
+			this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
 		}
 
 		// Compute the bounds
@@ -173,12 +171,12 @@ module PruneCluster {
             for (var category in newCluster.stats) {
                 if (newCluster.stats.hasOwnProperty(category)) {
                     if (this.stats.hasOwnProperty(category)) {
-                       this.stats[category] = newCluster.stats[category];
+                       this.stats[category] += newCluster.stats[category];
                     } else {
                         this.stats[category] = newCluster.stats[category];
                     }
                 }
-            }
+			}
         }
 	}
 
