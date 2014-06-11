@@ -42,6 +42,7 @@ You can specify a category for the markers. Then a small object representing the
 
 The category can be a number or a string, but in order to minimize the performance cost, it's recommanded to use numbers between 0 and 7.
 
+[![](http://medias.master-bridge.eu/ebc9e5393a8a018abb8771a3155b802f05995792.png)](http://sintef-9012.github.io/PruneCluster/examples/random.10000-categories.html) [![](http://medias.master-bridge.eu/d02e09d5fe43654141693f22924f606f4fd6960a.png)](http://sintef-9012.github.io/PruneCluster/examples/random.10000-categories-2.html)
 #### Dynamic cluster size
 
 The size of cluster can be adjusted on the fly *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
