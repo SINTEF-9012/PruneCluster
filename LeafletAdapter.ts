@@ -134,12 +134,13 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 		this._moveInProgress = true;
     },
 
-	_moveEnd: function() {
-	    this._moveInProgress = false;
+	_moveEnd: function(e) {
+		this._moveInProgress = false;
+		this._hardMove = e.hard;
 		this.ProcessView();
     },
 
-    _zoomStart: function () {
+	_zoomStart: function () {
 		this._zoomInProgress = true;
 	},
 
@@ -334,8 +335,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
                     }
                 }
 
-                if (remove) {
-                    data._leafletMarker.setOpacity(0);
+				if (remove) {
+					if (!this._hardMove) {
+						data._leafletMarker.setOpacity(0);
+					}
                     toRemove.push(data._leafletMarker);
                 }
             }
@@ -370,15 +373,22 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 		}, 1);
 
 		if (toRemove.length > 0) {
-			window.setTimeout(() => {
+			if (this._hardMove) {
 				for (i = 0, l = toRemove.length; i < l; ++i) {
-				    map.removeLayer(toRemove[i]);
+					map.removeLayer(toRemove[i]);
 				}
-			}, 300);
+			} else {
+				window.setTimeout(() => {
+					for (i = 0, l = toRemove.length; i < l; ++i) {
+						map.removeLayer(toRemove[i]);
+					}
+				}, 300);
+			}
 		}
 				
 		this._objectsOnMap = newObjectsOnMap;
-	},
+	    this._hardMove = false;
+    },
 
     FitBounds: function() {
         var bounds : PruneCluster.Bounds = this.Cluster.ComputeGlobalBounds();

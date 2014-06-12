@@ -469,8 +469,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
     _moveStart: function () {
         this._moveInProgress = true;
     },
-    _moveEnd: function () {
+    _moveEnd: function (e) {
         this._moveInProgress = false;
+        this._hardMove = e.hard;
         this.ProcessView();
     },
     _zoomStart: function () {
@@ -639,7 +640,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                 }
 
                 if (remove) {
-                    data._leafletMarker.setOpacity(0);
+                    if (!this._hardMove) {
+                        data._leafletMarker.setOpacity(0);
+                    }
                     toRemove.push(data._leafletMarker);
                 }
             }
@@ -674,14 +677,21 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         }, 1);
 
         if (toRemove.length > 0) {
-            window.setTimeout(function () {
+            if (this._hardMove) {
                 for (i = 0, l = toRemove.length; i < l; ++i) {
                     map.removeLayer(toRemove[i]);
                 }
-            }, 300);
+            } else {
+                window.setTimeout(function () {
+                    for (i = 0, l = toRemove.length; i < l; ++i) {
+                        map.removeLayer(toRemove[i]);
+                    }
+                }, 300);
+            }
         }
 
         this._objectsOnMap = newObjectsOnMap;
+        this._hardMove = false;
     },
     FitBounds: function () {
         var bounds = this.Cluster.ComputeGlobalBounds();
