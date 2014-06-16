@@ -129,9 +129,11 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 		}
 
 		this._objectsOnMap = [];
-		this.Cluster.ResetCluters();
+		this.Cluster.ResetClusters();
 
-        map.removeLayer(this.spiderfier);
+		map.removeLayer(this.spiderfier);
+
+		this._map = null;
 	},
 
 	_moveStart: function() {
@@ -154,7 +156,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 	},
 
     ProcessView: function () {
-        if (this._zoomInProgress || this._moveInProgress) {
+        if (!this._map || this._zoomInProgress || this._moveInProgress) {
             return;
         }
 
