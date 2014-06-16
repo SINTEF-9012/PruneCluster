@@ -475,7 +475,11 @@ module PruneCluster {
 
         public ComputeGlobalBounds(): Bounds {
             return this.ComputeBounds(this._markers);
-        } 
+		}
+
+		public ResetClusters() {
+			this._clusters = [];
+		}
 
 	}
 }

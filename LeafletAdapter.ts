@@ -118,14 +118,18 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 	},
 
 	onRemove: function (map: L.Map) {
+
 		map.off('movestart', this._moveStart, this);
 		map.off('moveend', this._moveEnd, this);
 		map.off('zoomend', this._zoomStart, this);
 		map.off('zoomend', this._zoomEnd, this);
 
 		for (var i = 0, l = this._objectsOnMap.length; i < l; ++i) {
-			map.removeLayer(this._objectsOnMap[i]);
+			map.removeLayer(this._objectsOnMap[i].data._leafletMarker);
 		}
+
+		this._objectsOnMap = [];
+		this.Cluster.ResetCluters();
 
         map.removeLayer(this.spiderfier);
 	},
