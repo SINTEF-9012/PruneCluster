@@ -33,11 +33,13 @@ module PruneCluster {
 		public category: number;
 		public weight: number;
 
-		constructor(lat: number, lng: number, data: {} = {}) {
+		constructor(lat: number, lng: number, data: {} = {},
+			category?: number, weight: number = 1) {
 			super();
 			this.data = data;
 			this.position = { lat: lat, lng: lng };
-			this.weight = 1;
+			this.weight = weight;
+			this.category = category;
 		}
 
 		public Move(lat: number, lng: number) {

@@ -140,13 +140,11 @@ canvas.fillText(this.population, center, center, radiusCenter*2);
     });
 
     for (var i = 0, l = addressPoints.length; i < l; ++i) {
-        var m = new PruneCluster.Marker(addressPoints[i][0], addressPoints[i][1], {title: addressPoints[i][2]});
-        m.category = /^\d+$/.test(addressPoints[i][2]) ? 5: 1;
+        var m = new PruneCluster.Marker(addressPoints[i][0], addressPoints[i][1], {title: addressPoints[i][2]},/^\d+$/.test(addressPoints[i][2]) ? 5: 1);
         leafletView.RegisterMarker(m);
     }
     for (i = 0, l = addressPoints2.length; i < l; ++i) {
-        var m2 = new PruneCluster.Marker(addressPoints2[i][0], addressPoints2[i][1], {title: addressPoints[i][2]});
-        m2.category = /^\d+$/.test(addressPoints[i][2]) ? 3: 0;
+        var m2 = new PruneCluster.Marker(addressPoints2[i][0], addressPoints2[i][1], {title: addressPoints[i][2]}, /^\d+$/.test(addressPoints[i][2]) ? 3: 0);
         leafletView.RegisterMarker(m2);
     }
 
