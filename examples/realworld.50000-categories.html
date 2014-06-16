@@ -6,56 +6,64 @@
     <title>PruneCluster - Realworld 50k</title>
 
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
-	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
 
     <script src="../dist/PruneCluster.js"></script>
 
-	<script src="realworld.50000.1.js"></script>
-	<script src="realworld.50000.2.js"></script>
+    <script src="realworld.50000.1.js"></script>
+    <script src="realworld.50000.2.js"></script>
 
-	<link rel="stylesheet" href="examples.css"/>
+    <link rel="stylesheet" href="examples.css"/>
 </head>
 <body>
-<div id="map"></div>
+    <div id="map"></div>
 
-<script>
-    var map = L.map("map", {
-        attributionControl: false,
-        zoomControl: false
-    }).setView(L.latLng(-37.79, 175.27), 12);
+    <script>
+        var map = L.map("map", {
+            attributionControl: false,
+            zoomControl: false
+        }).setView(L.latLng(-37.79, 175.27), 12);
 
-    L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
-        detectRetina: true,
-        maxNativeZoom: 17
-    }).addTo(map);
+        L.tileLayer('http://{s}.tiles.mapbox.com/v3/apultier.gefchkmf/{z}/{x}/{y}.png', {
+            detectRetina: true,
+            maxNativeZoom: 17
+        }).addTo(map);
 
-    var leafletView = new PruneClusterForLeaflet();
+        var leafletView = new PruneClusterForLeaflet();
 
-    leafletView.BuildLeafletClusterIcon = function(cluster) {
-        var e = new L.Icon.MarkerCluster();
+        leafletView.BuildLeafletClusterIcon = function(cluster) {
+            var e = new L.Icon.MarkerCluster();
 
-        e.stats = cluster.stats;
-        e.population = cluster.population;
-        return e;
-    };
+            e.stats = cluster.stats;
+            e.population = cluster.population;
+            return e;
+        };
 
-    var colors = ['#ff4b00', '#bac900', '#EC1813', '#55BCBE', '#D2204C', '#FF0000', '#ada59a', '#3e647e'],
+        var colors = ['#ff4b00', '#bac900', '#EC1813', '#55BCBE', '#D2204C', '#FF0000', '#ada59a', '#3e647e'],
         pi2 = Math.PI * 2;
 
-    L.Icon.MarkerCluster = L.Icon.extend({
-        options: {
-            iconSize: new L.Point(44, 44),
-            className: 'prunecluster leaflet-markercluster-icon'
-        },
+        L.Icon.MarkerCluster = L.Icon.extend({
+            options: {
+                iconSize: new L.Point(44, 44),
+                className: 'prunecluster leaflet-markercluster-icon'
+            },
 
-        createIcon: function () {
+            createIcon: function () {
             // based on L.Icon.Canvas from shramov/leaflet-plugins (BSD licence)
             var e = document.createElement('canvas');
             this._setIconStyles(e, 'icon');
             var s = this.options.iconSize;
-            e.width = s.x;
-            e.height = s.y;
-            this.draw(e.getContext('2d'), s.x, s.y);
+
+            if (L.Browser.retina) {
+                e.width = s.x + s.x;
+                e.height = s.y + s.y;
+            } else {
+                e.width = s.x;
+                e.height = s.y;
+            }
+
+            // this.draw(e.getContext('2d'), s.x, s.y);
+            this.draw(e.getContext('2d'), e.width, e.height);
             return e;
         },
 
@@ -67,96 +75,93 @@
 
             var xa = 2, xb = 50, ya = 18, yb = 21;
 
-var r = ya + (this.population - xa) * ((yb - ya) / (xb - xa));
+            var r = ya + (this.population - xa) * ((yb - ya) / (xb - xa));
 
-var radiusMarker = Math.min(r, 21),
-radiusCenter = 11,
-center = width / 2;
+            var radiusMarker = Math.min(r, 21),
+            radiusCenter = 11,
+            center = width / 2;
 
-if (L.Browser.retina) {
-canvas.scale(2, 2);
-center /= 2;
-canvas.lineWidth = 0.5;
-}
+            if (L.Browser.retina) {
+                canvas.scale(2, 2);
+                center /= 2;
+                canvas.lineWidth = 0.5;
+            }
 
-canvas.strokeStyle = 'rgba(0,0,0,0.25)';
+            canvas.strokeStyle = 'rgba(0,0,0,0.25)';
 
-var start = 0, stroke = true;
-for (var i = 0, l = colors.length; i < l; ++i) {
+            var start = 0, stroke = true;
+            for (var i = 0, l = colors.length; i < l; ++i) {
 
-//var size = Math.min(this.stats[i] / this.population,
-// this.stats[i] / 100);
+                var size = this.stats[i] / this.population;
 
-var size = this.stats[i] / this.population;
+                if (size > 0) {
 
-if (size > 0) {
+                    stroke = size != 1;
 
-stroke = size != 1;
+                    canvas.beginPath();
+                    canvas.moveTo(center, center);
+                    canvas.fillStyle = colors[i];
+                    var from = start + 0.14,
+                    to = start + size * pi2;
 
-canvas.beginPath();
-canvas.moveTo(center, center);
-canvas.fillStyle = colors[i];
-var from = start + 0.14,
-to = start + size * pi2;
+                    if (to < from || size == 1) {
+                        from = start;
+                    }
+                    canvas.arc(center, center, radiusMarker, from, to);
 
-if (to < from || size == 1) {
-from = start;
-}
-canvas.arc(center, center, radiusMarker, from, to);
+                    start = start + size * pi2;
+                    canvas.lineTo(center, center);
+                    canvas.fill();
+                    if (stroke) {
+                        canvas.stroke();
+                    }
+                    canvas.closePath();
+                }
 
-start = start + size * pi2;
-canvas.lineTo(center, center);
-canvas.fill();
-if (stroke) {
-canvas.stroke();
-}
-canvas.closePath();
-}
+            }
 
-}
+            if (!stroke) {
+                canvas.beginPath();
+                canvas.arc(center, center, radiusMarker, 0, Math.PI * 2);
+                canvas.stroke();
+                canvas.closePath();
+            }
 
-if (!stroke) {
-canvas.beginPath();
-canvas.arc(center, center, radiusMarker, 0, Math.PI * 2);
-canvas.stroke();
-canvas.closePath();
-}
-
-canvas.beginPath();
-canvas.fillStyle = 'white';
-canvas.moveTo(center, center);
-canvas.arc(center, center, radiusCenter, 0, Math.PI * 2);
-canvas.fill();
-canvas.closePath();
+            canvas.beginPath();
+            canvas.fillStyle = 'white';
+            canvas.moveTo(center, center);
+            canvas.arc(center, center, radiusCenter, 0, Math.PI * 2);
+            canvas.fill();
+            canvas.closePath();
 
 
-canvas.fillStyle = '#454545';
-canvas.textAlign = 'center';
-canvas.textBaseline = 'middle';
-canvas.font = 'bold '+(this.population < 100 ? '12' : (this.population < 1000 ? '11' : '9'))+'px sans-serif';
+            canvas.fillStyle = '#454545';
+            canvas.textAlign = 'center';
+            canvas.textBaseline = 'middle';
+            canvas.font = 'bold '+(this.population < 100 ? '12' : (this.population < 1000 ? '11' : '9'))+'px sans-serif';
 
-canvas.fillText(this.population, center, center, radiusCenter*2);
+            canvas.fillText(this.population, center, center, radiusCenter*2);
         }
     });
 
-    for (var i = 0, l = addressPoints.length; i < l; ++i) {
-        var m = new PruneCluster.Marker(addressPoints[i][0], addressPoints[i][1], {title: addressPoints[i][2]},/^\d+$/.test(addressPoints[i][2]) ? 5: 1);
-        leafletView.RegisterMarker(m);
-    }
-    for (i = 0, l = addressPoints2.length; i < l; ++i) {
-        var m2 = new PruneCluster.Marker(addressPoints2[i][0], addressPoints2[i][1], {title: addressPoints[i][2]}, /^\d+$/.test(addressPoints[i][2]) ? 3: 0);
-        leafletView.RegisterMarker(m2);
-    }
+for (var i = 0, l = addressPoints.length; i < l; ++i) {
+    var m = new PruneCluster.Marker(addressPoints[i][0], addressPoints[i][1], {title: addressPoints[i][2]},/^\d+$/.test(addressPoints[i][2]) ? 5: 1);
+    leafletView.RegisterMarker(m);
+}
+for (i = 0, l = addressPoints2.length; i < l; ++i) {
+    var m2 = new PruneCluster.Marker(addressPoints2[i][0], addressPoints2[i][1], {title: addressPoints[i][2]}, /^\d+$/.test(addressPoints[i][2]) ? 3: 0);
+    leafletView.RegisterMarker(m2);
+}
 
-    leafletView.PrepareLeafletMarker = function (marker, data, category) {
-        if (marker.getPopup()) {
-            marker.setPopupContent(data.title + " - " + category);
-        } else {
-            marker.bindPopup(data.title + " - " + category);
-        }
-    };
+leafletView.PrepareLeafletMarker = function (marker, data, category) {
+    if (marker.getPopup()) {
+        marker.setPopupContent(data.title + " - " + category);
+    } else {
+        marker.bindPopup(data.title + " - " + category);
+    }
+};
 
-    map.addLayer(leafletView);
+map.addLayer(leafletView);
 </script>
 </body>
 </html>
