@@ -150,11 +150,11 @@ canvas.fillText(this.population, center, center, radiusCenter*2);
         leafletView.RegisterMarker(m2);
     }
 
-    leafletView.PrepareLeafletMarker = function (marker, data) {
+    leafletView.PrepareLeafletMarker = function (marker, data, category) {
         if (marker.getPopup()) {
-            marker.setPopupContent(data.title);
+            marker.setPopupContent(data.title + " - " + category);
         } else {
-            marker.bindPopup(data.title);
+            marker.bindPopup(data.title + " - " + category);
         }
     };
 

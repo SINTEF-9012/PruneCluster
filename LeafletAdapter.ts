@@ -15,7 +15,7 @@ module PruneCluster {
         BuildLeafletCluster: (cluster: Cluster, position: L.LatLng) => L.ILayer;
 	    BuildLeafletClusterIcon: (cluster: Cluster) => L.Icon;
         BuildLeafletMarker: (marker: Marker, position: L.LatLng) => L.Marker;
-        PrepareLeafletMarker: (marker: L.Marker, data: {}) => void;
+        PrepareLeafletMarker: (marker: L.Marker, data: {}, category: number) => void;
 	}
 }
 
@@ -98,12 +98,12 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
 	},
 
     BuildLeafletMarker: function (marker: PruneCluster.Marker, position: L.LatLng): L.Marker {
-        var m = new L.Marker(position);
-        this.PrepareLeafletMarker(m, marker.data);
+		var m = new L.Marker(position);
+		this.PrepareLeafletMarker(m, marker.data, marker.category);
         return m;
     },
 
-    PrepareLeafletMarker: function (marker: L.Marker, data: {}) {
+	PrepareLeafletMarker: function (marker: L.Marker, data: {}, category: number) {
     },
 
 	onAdd: function(map: L.Map) {
@@ -247,8 +247,11 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
             var oldMarker = cluster.data._leafletMarker;
 			if (oldMarker) {
                 if (cluster.population === 1 && cluster.data._leafletOldPopulation === 1) {
-                    if (oldMarker._zoomLevel !== zoom) {
-                        this.PrepareLeafletMarker(oldMarker, cluster.lastMarker.data);
+					if (oldMarker._zoomLevel !== zoom) {
+						this.PrepareLeafletMarker(
+							oldMarker,
+							cluster.lastMarker.data,
+							cluster.lastMarker.category);
                     }
                     oldMarker.setLatLng(position);
 					m = oldMarker;
@@ -315,7 +318,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer? (<any>L).Layer : L.Class).extend({
                         if (oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat) {
 
                             if (marker._population === 1 && jcluster.population === 1) {
-                                this.PrepareLeafletMarker(marker, jcluster.lastMarker.data);
+								this.PrepareLeafletMarker(
+									marker,
+									jcluster.lastMarker.data,
+									jcluster.lastMarker.category);
                                 marker.setLatLng(jcluster.data._leafletPosition);
                                 remove = false;
                             } else if (marker._population > 1 && jcluster.population > 1) {
