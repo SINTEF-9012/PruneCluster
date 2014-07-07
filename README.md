@@ -65,11 +65,7 @@ leafletMap.addLayer(pruneCluster);
 
 #### Update a position
 ```javascript
-marker.position.lat = newLatitude;
-marker.position.lng = newLongitude;
-
-// or
-marker.position = {lat: newLatitude, lng: newLongitude};
+marker.Move(lat, lng);
 ```
 
 #### Deletions
