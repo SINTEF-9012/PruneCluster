@@ -24,14 +24,16 @@ var PruneCluster;
 
     var Marker = (function (_super) {
         __extends(Marker, _super);
-        function Marker(lat, lng, data, category, weight) {
+        function Marker(lat, lng, data, category, weight, filtered) {
             if (typeof data === "undefined") { data = {}; }
             if (typeof weight === "undefined") { weight = 1; }
+            if (typeof filtered === "undefined") { filtered = false; }
             _super.call(this);
             this.data = data;
             this.position = { lat: lat, lng: lng };
             this.weight = weight;
             this.category = category;
+            this.filtered = filtered;
         }
         Marker.prototype.Move = function (lat, lng) {
             this.position.lat = lat;
@@ -244,7 +246,7 @@ var PruneCluster;
                     break;
                 }
 
-                if (markerPosition.lat > extendedBounds.minLat && markerPosition.lat < extendedBounds.maxLat) {
+                if (markerPosition.lat > extendedBounds.minLat && markerPosition.lat < extendedBounds.maxLat && !marker.filtered) {
                     var clusterFound = false, cluster;
 
                     for (var j = 0, ll = workingClusterList.length; j < ll; ++j) {

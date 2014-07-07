@@ -32,14 +32,16 @@ module PruneCluster {
 
 		public category: number;
 		public weight: number;
+		public filtered: boolean;
 
 		constructor(lat: number, lng: number, data: {} = {},
-			category?: number, weight: number = 1) {
+			category?: number, weight: number = 1, filtered: boolean = false) {
 			super();
 			this.data = data;
 			this.position = { lat: lat, lng: lng };
 			this.weight = weight;
 			this.category = category;
+			this.filtered = filtered;
 		}
 
 		public Move(lat: number, lng: number) {
@@ -331,9 +333,10 @@ module PruneCluster {
 				}
 
 
-				// If the marker is inside the view
+				// If the marker is inside the view and is not filtered
 				if (markerPosition.lat > extendedBounds.minLat &&
-					markerPosition.lat < extendedBounds.maxLat) {
+					markerPosition.lat < extendedBounds.maxLat &&
+					!marker.filtered) {
 
 					var clusterFound = false, cluster: Cluster;
 
