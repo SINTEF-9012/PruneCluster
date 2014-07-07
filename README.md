@@ -115,11 +115,11 @@ marker.data.ID = '76ez';
 ```
 
 #### Setting up a Leaflet icon or a Leaflet popup
-In order to improve performances, the Leaflet marker is created only if needed and can be recycled. You can setup the marker by overriding the PreapareLeafletMarker method.
+In order to improve the performances, the Leaflet marker is created only if needed and can be recycled. You can setup the marker by overriding the PreapareLeafletMarker method.
 
 ```javascript
 pruneCluster.PrepareLeafletMarker = function(leafletMarker, data) {
-    leafletMarker.setIcon(/*... */); // [See the Leaflet documentation](http://leafletjs.com/reference.html#icon)
+    leafletMarker.setIcon(/*... */); // See http://leafletjs.com/reference.html#icon
     
     // A popup can already be attached to the marker
     // bindPopup can override it, but it's faster to update the content instead
@@ -139,14 +139,14 @@ pruneCluster.BuildLeafletClusterIcon = function(cluster) {
     
     ...
     
-    return icon; // L.Icon object;
+    return icon; // L.Icon object (See http://leafletjs.com/reference.html#icon);
 };
 ```
 
 
 ### Acknowledgements
 
-This code is developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project.
+This library is developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project.
 
 ### Licence
 
