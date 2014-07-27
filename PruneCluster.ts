@@ -61,12 +61,14 @@ module PruneCluster {
 		public totalWeight: number;
 
 		public lastMarker: Marker;
+        private _clusterMmarkers: Marker[];
 
 		constructor(marker?: Marker) {
             super();
 
 			this.stats = [0,0,0,0,0,0,0,0];
 			this.data = {};
+            this._clusterMmarkers = [];
 
             if (!marker) return;
 
@@ -95,6 +97,7 @@ module PruneCluster {
 		public AddMarker(marker: Marker) {
 
 			this.lastMarker = marker;
+            this._clusterMmarkers.push(marker);
 
 			// Compute the weighted arithmetic mean
 			var weight = marker.weight,
@@ -123,6 +126,7 @@ module PruneCluster {
 			this.population = 0;
 			this.totalWeight = 0;
 			this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
+            this._clusterMmarkers = [];
 		}
 
 		// Compute the bounds
@@ -149,6 +153,10 @@ module PruneCluster {
 				minLng: a.lng,
 				maxLng: b.lng
 			};
+        }
+
+        public getClusterMarkers() {
+            return this._clusterMmarkers;
         }
 
         public ApplyCluster(newCluster: Cluster) {
@@ -181,6 +189,8 @@ module PruneCluster {
                     }
                 }
 			}
+
+            this._clusterMmarkers.concat(newCluster.getClusterMarkers());
         }
 	}
 
@@ -387,7 +397,7 @@ module PruneCluster {
 				}
 			}
 
-			//console.log("Avant: ", clusters.length, "Après: ", newClustersList.length);
+			//console.log("Avant: ", clusters.length, "Apr?s: ", newClustersList.length);
 			this._clusters = newClustersList;
 
 			// We keep the list of markers sorted, it's faster
