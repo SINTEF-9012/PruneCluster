@@ -11,6 +11,7 @@ module PruneCluster {
 		RemoveMarkers: (markers: Marker[]) => void;
 		ProcessView: () => void;
 		FitBounds: () => void;
+		GetMarkers: () => Marker[];
 
 		BuildLeafletCluster: (cluster: Cluster, position: L.LatLng) => L.ILayer;
 		BuildLeafletClusterIcon: (cluster: Cluster) => L.Icon;
@@ -408,5 +409,9 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 				new L.LatLng(bounds.minLat, bounds.maxLng),
 				new L.LatLng(bounds.maxLat, bounds.minLng)));
 		}
+	},
+
+	GetMarkers: function() {
+		return this.Cluster.GetMarkers();
 	}
 });

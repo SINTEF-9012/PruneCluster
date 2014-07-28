@@ -495,6 +495,10 @@ module PruneCluster {
 			return this.ComputeBounds(this._markers);
 		}
 
+		public GetMarkers(): Marker[] {
+			return this._markers;
+		}
+
 		public ResetClusters() {
 			this._clusters = [];
 		}
