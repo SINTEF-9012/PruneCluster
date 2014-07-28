@@ -131,8 +131,12 @@ pruneCluster.PrepareLeafletMarker = function(leafletMarker, data) {
 ```javascript
 pruneCluster.BuildLeafletClusterIcon = function(cluster) {
     var population = cluster.population, // the number of markers inside the cluster
-        stats = cluster.stats, // if you have categories on your markers
-        markers = cluster.getClusterMarkers() // if you want list of markers in cluster
+        stats = cluster.stats; // if you have categories on your markers
+
+    // If you want list of markers inside the cluster
+    // (you must enable the option using PruneCluster.Cluster.ENABLE_MARKERS_LIST = true)
+    var markers = cluster.getClusterMarkers() 
+        
     ...
     
     return icon; // L.Icon object (See http://leafletjs.com/reference.html#icon);
