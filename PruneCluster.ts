@@ -134,7 +134,10 @@ module PruneCluster {
 			this.population = 0;
 			this.totalWeight = 0;
 			this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
-			this._clusterMarkers = [];
+
+			if (Cluster.ENABLE_MARKERS_LIST) {
+				this._clusterMarkers = [];
+			}
 		}
 
 		// Compute the bounds
