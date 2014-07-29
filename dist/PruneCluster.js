@@ -1,4 +1,4 @@
-﻿var __extends = this.__extends || function (d, b) {
+var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -51,6 +51,10 @@ var PruneCluster;
             this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
             this.data = {};
 
+            if (Cluster.ENABLE_MARKERS_LIST) {
+                this._clusterMarkers = [];
+            }
+
             if (!marker)
                 return;
 
@@ -75,6 +79,10 @@ var PruneCluster;
             };
         }
         Cluster.prototype.AddMarker = function (marker) {
+            if (Cluster.ENABLE_MARKERS_LIST) {
+                this._clusterMarkers.push(marker);
+            }
+
             this.lastMarker = marker;
 
             var weight = marker.weight, currentTotalWeight = this.totalWeight, newWeight = weight + currentTotalWeight;
@@ -96,6 +104,10 @@ var PruneCluster;
             this.population = 0;
             this.totalWeight = 0;
             this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
+
+            if (Cluster.ENABLE_MARKERS_LIST) {
+                this._clusterMarkers = [];
+            }
         };
 
         Cluster.prototype.ComputeBounds = function (cluster) {
@@ -113,6 +125,10 @@ var PruneCluster;
                 minLng: a.lng,
                 maxLng: b.lng
             };
+        };
+
+        Cluster.prototype.GetClusterMarkers = function () {
+            return this._clusterMarkers;
         };
 
         Cluster.prototype.ApplyCluster = function (newCluster) {
@@ -139,7 +155,12 @@ var PruneCluster;
                     }
                 }
             }
+
+            if (Cluster.ENABLE_MARKERS_LIST) {
+                this._clusterMarkers.concat(newCluster.GetClusterMarkers());
+            }
         };
+        Cluster.ENABLE_MARKERS_LIST = false;
         return Cluster;
     })(ClusterObject);
     _PruneCluster.Cluster = Cluster;
@@ -360,6 +381,10 @@ var PruneCluster;
 
         PruneCluster.prototype.ComputeGlobalBounds = function () {
             return this.ComputeBounds(this._markers);
+        };
+
+        PruneCluster.prototype.GetMarkers = function () {
+            return this._markers;
         };
 
         PruneCluster.prototype.ResetClusters = function () {
@@ -711,6 +736,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         if (bounds) {
             this._map.fitBounds(new L.LatLngBounds(new L.LatLng(bounds.minLat, bounds.maxLng), new L.LatLng(bounds.maxLat, bounds.minLng)));
         }
+    },
+    GetMarkers: function () {
+        return this.Cluster.GetMarkers();
     }
 });
 var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({

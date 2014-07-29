@@ -61,16 +61,21 @@ module PruneCluster {
 		public totalWeight: number;
 
 		public lastMarker: Marker;
-        private _clusterMmarkers: Marker[];
+		private _clusterMarkers: Marker[];
+
+		public static ENABLE_MARKERS_LIST: boolean = false;
 
 		constructor(marker?: Marker) {
-            super();
+			super();
 
-			this.stats = [0,0,0,0,0,0,0,0];
+			this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
 			this.data = {};
-            this._clusterMmarkers = [];
 
-            if (!marker) return;
+			if (Cluster.ENABLE_MARKERS_LIST) {
+				this._clusterMarkers = [];
+			}
+
+			if (!marker) return;
 
 			this.lastMarker = marker;
 
@@ -96,8 +101,11 @@ module PruneCluster {
 
 		public AddMarker(marker: Marker) {
 
+			if (Cluster.ENABLE_MARKERS_LIST) {
+				this._clusterMarkers.push(marker);
+			}
+
 			this.lastMarker = marker;
-            this._clusterMmarkers.push(marker);
 
 			// Compute the weighted arithmetic mean
 			var weight = marker.weight,
@@ -126,7 +134,10 @@ module PruneCluster {
 			this.population = 0;
 			this.totalWeight = 0;
 			this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
-            this._clusterMmarkers = [];
+
+			if (Cluster.ENABLE_MARKERS_LIST) {
+				this._clusterMarkers = [];
+			}
 		}
 
 		// Compute the bounds
@@ -153,14 +164,14 @@ module PruneCluster {
 				minLng: a.lng,
 				maxLng: b.lng
 			};
-        }
+		}
 
-        public getClusterMarkers() {
-            return this._clusterMmarkers;
-        }
+		public GetClusterMarkers() {
+			return this._clusterMarkers;
+		}
 
-        public ApplyCluster(newCluster: Cluster) {
-            var weight = newCluster.totalWeight,
+		public ApplyCluster(newCluster: Cluster) {
+			var weight = newCluster.totalWeight,
 				currentTotalWeight = this.totalWeight,
 				newWeight = weight + currentTotalWeight;
 
@@ -173,25 +184,27 @@ module PruneCluster {
 				newCluster.averagePosition.lng * weight) / newWeight;
 
 			this.population += newCluster.population;
-            this.totalWeight = newWeight;
+			this.totalWeight = newWeight;
 
-            this.bounds.minLat = Math.min(this.bounds.minLat, newCluster.bounds.minLat);
-            this.bounds.minLng = Math.min(this.bounds.minLng, newCluster.bounds.minLng);
-            this.bounds.maxLat = Math.max(this.bounds.maxLat, newCluster.bounds.maxLat);
-            this.bounds.maxLng = Math.max(this.bounds.maxLng, newCluster.bounds.maxLng);
+			this.bounds.minLat = Math.min(this.bounds.minLat, newCluster.bounds.minLat);
+			this.bounds.minLng = Math.min(this.bounds.minLng, newCluster.bounds.minLng);
+			this.bounds.maxLat = Math.max(this.bounds.maxLat, newCluster.bounds.maxLat);
+			this.bounds.maxLng = Math.max(this.bounds.maxLng, newCluster.bounds.maxLng);
 
-            for (var category in newCluster.stats) {
-                if (newCluster.stats.hasOwnProperty(category)) {
-                    if (this.stats.hasOwnProperty(category)) {
-                       this.stats[category] += newCluster.stats[category];
-                    } else {
-                        this.stats[category] = newCluster.stats[category];
-                    }
-                }
+			for (var category in newCluster.stats) {
+				if (newCluster.stats.hasOwnProperty(category)) {
+					if (this.stats.hasOwnProperty(category)) {
+						this.stats[category] += newCluster.stats[category];
+					} else {
+						this.stats[category] = newCluster.stats[category];
+					}
+				}
 			}
 
-            this._clusterMmarkers.concat(newCluster.getClusterMarkers());
-        }
+			if (Cluster.ENABLE_MARKERS_LIST) {
+				this._clusterMarkers.concat(newCluster.GetClusterMarkers());
+			}
+		}
 	}
 
 	function checkPositionInsideBounds(a: Position, b: Bounds): boolean {
@@ -200,8 +213,11 @@ module PruneCluster {
 	}
 
 	function insertionSort(list: ClusterObject[]) {
-		for (var i: number = 1, j: number, tmp: ClusterObject,
-			tmpLng: number, length = list.length; i < length; ++i) {
+		for (var i: number = 1,
+			j: number,
+			tmp: ClusterObject,
+			tmpLng: number,
+			length = list.length; i < length; ++i) {
 			tmp = list[i];
 			tmpLng = tmp.position.lng;
 			for (j = i - 1; j >= 0 && list[j].position.lng > tmpLng; --j) {
@@ -222,12 +238,12 @@ module PruneCluster {
 		// Cluster size in (in pixels)
 		public Size: number = 166;
 
-        // View padding (extended size of the view)
-        public ViewPadding: number = 0.2;
+		// View padding (extended size of the view)
+		public ViewPadding: number = 0.2;
 
 		// These methods should be defined by the user
-		public Project: (lat:number, lng:number) => Point;
-		public UnProject: (x:number, y:number) => Position;
+		public Project: (lat: number, lng: number) => Point;
+		public UnProject: (x: number, y: number) => Position;
 
 		public RegisterMarker(marker: Marker) {
 			if ((<any>marker)._removeFlag) {
@@ -269,7 +285,7 @@ module PruneCluster {
 				step,
 				first = 0,
 				count = markers.length;
-			
+
 			while (count > 0) {
 				step = Math.floor(count / 2);
 				it = first + step;
@@ -296,7 +312,7 @@ module PruneCluster {
 			}
 		}
 
-		public ProcessView(bounds: Bounds): Cluster[]{
+		public ProcessView(bounds: Bounds): Cluster[] {
 
 			// Compute the extended bounds of the view
 			var heightBuffer = Math.abs(bounds.maxLat - bounds.minLat) * this.ViewPadding,
@@ -318,7 +334,7 @@ module PruneCluster {
 			this._resetClusterViews();
 
 			// Binary search for the first interesting marker
-            var firstIndex = this._indexLowerBoundLng(extendedBounds.minLng);
+			var firstIndex = this._indexLowerBoundLng(extendedBounds.minLng);
 			//console.log("Start index: ", firstIndex);
 
 			// Just some shortcuts
@@ -381,7 +397,7 @@ module PruneCluster {
 						clusters.push(cluster);
 						workingClusterList.push(cluster);
 					}
-					
+
 //					++cpt;
 				}
 			}
@@ -397,7 +413,7 @@ module PruneCluster {
 				}
 			}
 
-			//console.log("Avant: ", clusters.length, "Apr?s: ", newClustersList.length);
+			//console.log("Avant: ", clusters.length, "Apres: ", newClustersList.length);
 			this._clusters = newClustersList;
 
 			// We keep the list of markers sorted, it's faster
@@ -427,69 +443,73 @@ module PruneCluster {
 		// This method is a bit slow ( O(n)) because it's not worth to make
 		// system which will slow down all the clusters just to have
 		// this one fast
-	    public FindMarkersInArea(area: Bounds): Marker[] {
+		public FindMarkersInArea(area: Bounds): Marker[] {
 			var aMinLat = area.minLat,
 				aMaxLat = area.maxLat,
 				aMinLng = area.minLng,
-                aMaxLng = area.maxLng,
+				aMaxLng = area.maxLng,
 
-                markers = this._markers,
-                
-                result = [];
+				markers = this._markers,
 
-            var firstIndex = this._indexLowerBoundLng(aMinLng);
+				result = [];
+
+			var firstIndex = this._indexLowerBoundLng(aMinLng);
 
 			for (var i = firstIndex, l = markers.length; i < l; ++i) {
-                var pos = markers[i].position;
+				var pos = markers[i].position;
 
 				if (pos.lng > aMaxLng) {
 					break;
-                }
+				}
 
 				if (pos.lat >= aMinLat && pos.lat <= aMaxLat &&
 					pos.lng >= aMinLng) {
 
-				    result.push(markers[i]);
+					result.push(markers[i]);
 				}
-            }
+			}
 
-	        return result;
-	    }
-
-	    public ComputeBounds(markers: Marker[]): Bounds {
-				
-            if (!markers || !markers.length) {
-                return null;
-            }
-
-            var rMinLat = Number.MAX_VALUE,
-                rMaxLat = -Number.MAX_VALUE,
-                rMinLng = Number.MAX_VALUE,
-                rMaxLng = -Number.MAX_VALUE;
-
-            for (var i = 0, l = markers.length; i < l; ++i) {
-                var pos = markers[i].position;
-
-                if (pos.lat < rMinLat) rMinLat = pos.lat;
-                if (pos.lat > rMaxLat) rMaxLat = pos.lat;
-                if (pos.lng < rMinLng) rMinLng = pos.lng;
-                if (pos.lng > rMaxLng) rMaxLng = pos.lng;
-            }
-
-            return {
-                minLat: rMinLat,
-                maxLat: rMaxLat,
-                minLng: rMinLng,
-                maxLng: rMaxLng
-            };
+			return result;
 		}
 
-        public FindMarkersBoundsInArea(area: Bounds): Bounds {
-            return this.ComputeBounds(this.FindMarkersInArea(area));
-        }
+		public ComputeBounds(markers: Marker[]): Bounds {
 
-        public ComputeGlobalBounds(): Bounds {
-            return this.ComputeBounds(this._markers);
+			if (!markers || !markers.length) {
+				return null;
+			}
+
+			var rMinLat = Number.MAX_VALUE,
+				rMaxLat = -Number.MAX_VALUE,
+				rMinLng = Number.MAX_VALUE,
+				rMaxLng = -Number.MAX_VALUE;
+
+			for (var i = 0, l = markers.length; i < l; ++i) {
+				var pos = markers[i].position;
+
+				if (pos.lat < rMinLat) rMinLat = pos.lat;
+				if (pos.lat > rMaxLat) rMaxLat = pos.lat;
+				if (pos.lng < rMinLng) rMinLng = pos.lng;
+				if (pos.lng > rMaxLng) rMaxLng = pos.lng;
+			}
+
+			return {
+				minLat: rMinLat,
+				maxLat: rMaxLat,
+				minLng: rMinLng,
+				maxLng: rMaxLng
+			};
+		}
+
+		public FindMarkersBoundsInArea(area: Bounds): Bounds {
+			return this.ComputeBounds(this.FindMarkersInArea(area));
+		}
+
+		public ComputeGlobalBounds(): Bounds {
+			return this.ComputeBounds(this._markers);
+		}
+
+		public GetMarkers(): Marker[] {
+			return this._markers;
 		}
 
 		public ResetClusters() {
