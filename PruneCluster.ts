@@ -422,8 +422,9 @@ module PruneCluster {
 			return this._clusters;
 		}
 
-		public RemoveMarkers(markers: Marker[]) {
+		public RemoveMarkers(markers?: Marker[]) {
 
+            // if markers are undefined, remove all
             if (!markers) {
                 this._markers = [];
                 return;
