@@ -424,6 +424,11 @@ module PruneCluster {
 
 		public RemoveMarkers(markers: Marker[]) {
 
+            if (!markers) {
+                this._markers = [];
+                return;
+            }
+
 			// Mark the markers to be deleted
 			for (var i = 0, l = markers.length; i < l; ++i) {
 				(<any>markers[i])._removeFlag = true;
