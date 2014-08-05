@@ -122,7 +122,7 @@ pruneCluster.PrepareLeafletMarker = function(leafletMarker, data) {
     if (leafletMarker.getPopup()) {
         leafletMarker.setPopupContent(data.name);
     } else {
-        marker.bindPopup(data.title);
+        leafletMarker.bindPopup(data.name);
     }
 };
 ```
