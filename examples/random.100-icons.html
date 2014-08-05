@@ -29,12 +29,18 @@
     }).addTo(map);
 
     var leafletView = new PruneClusterForLeaflet();
-    leafletView.Cluster.Size = 160;
+
+    var icon = L.icon({
+        iconUrl: 'helicopter.png',
+        iconSize: [48, 48]
+    });
 
     var size = 100;
     var markers = [];
+
+
     for (var i = 0; i < size; ++i) {
-        var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * 0.00002 * size, {
+        var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * 0.0001 * size, 10.752778 + (Math.random() - 0.5) * 0.0002 * size, {
             name: "Roger "+i
         });
 
@@ -43,6 +49,8 @@
     }
 
     leafletView.PrepareLeafletMarker  = function(leafletMarker, data) {
+        leafletMarker.setIcon(icon);
+
         if (leafletMarker.getPopup()) {
             leafletMarker.setPopupContent(data.name);
         } else {
