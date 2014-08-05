@@ -313,6 +313,11 @@ var PruneCluster;
         };
 
         PruneCluster.prototype.RemoveMarkers = function (markers) {
+            if (!markers) {
+                this._markers = [];
+                return;
+            }
+
             for (var i = 0, l = markers.length; i < l; ++i) {
                 markers[i]._removeFlag = true;
             }
