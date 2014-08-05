@@ -69,9 +69,11 @@ marker.Move(lat, lng);
 ```
 
 #### Deletions
-The method argument is an array of markers, it is better to group the deletions.
-
 ```javascript
+// Remove all the markers
+pruneCluster.RemoveMarkers();
+
+// Remove a list of markers
 pruneCluster.RemoveMarkers([markerA,markerB,...]);
 ```
 
