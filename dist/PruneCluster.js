@@ -39,6 +39,10 @@ var PruneCluster;
             this.position.lat = lat;
             this.position.lng = lng;
         };
+
+        Marker.prototype.SetData = function (data) {
+            this.data = data;
+        };
         return Marker;
     })(ClusterObject);
     _PruneCluster.Marker = Marker;
