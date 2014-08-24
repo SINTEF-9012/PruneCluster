@@ -376,6 +376,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			}
 
 			creationMarker.addTo(map);
+			L.DomUtil.addClass(creationMarker._icon, "no-anim");
 			creationMarker.setOpacity(0);
 			creationMarker._zoomLevel = zoom;
 			creationMarker._hashCode = icluster.hashCode;
@@ -389,7 +390,9 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 		window.setTimeout(() => {
 			for (i = 0, l = opacityUpdateList.length; i < l; ++i) {
-				opacityUpdateList[i].setOpacity(1);
+				var m = opacityUpdateList[i];
+				L.DomUtil.removeClass(m._icon, "no-anim");
+				m.setOpacity(1);
 			}
 		}, 1);
 

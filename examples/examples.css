@@ -10,7 +10,9 @@
 	border-radius: 20px;
 	transition: all 0.3s linear;
 }
-.leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-markercluster-icon {
+.leaflet-marker-icon:not(.no-anim),
+.leaflet-marker-shadow:not(.no-anim),
+.leaflet-markercluster-icon:not(.no-anim) {
 	transition: all 0.3s linear;
 }
 .prunecluster div {
