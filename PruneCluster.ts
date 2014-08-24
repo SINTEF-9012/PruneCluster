@@ -48,6 +48,10 @@ module PruneCluster {
 			this.position.lat = lat;
 			this.position.lng = lng;
 		}
+        
+        public SetData(data: any) {
+            this.data = data;
+        }
 
 	}
 
