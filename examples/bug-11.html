@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Realworld 50k</title>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+    <link rel="stylesheet" href="examples.css"/>
+</head>
+<body>
+<div id="map"></div>
+<a href="#" id="delete">Switch</a>
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView([43.033367, -88.113708], 18);
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    var cluster = new PruneClusterForLeaflet();
+    
+    var m1 = new PruneCluster.Marker(43.0338, -88.115);
+    var m2 = new PruneCluster.Marker(43.033367, -88.113708);
+    var m3 = new PruneCluster.Marker(43.033367, -88.1135);
+    m3.filtered = true;
+    cluster.RegisterMarker(m1);
+    cluster.RegisterMarker(m2);
+    cluster.RegisterMarker(m3);
+    
+    cluster.ProcessView();
+    
+    document.getElementById('delete').onclick = function () {
+        [m1, m2, m3].forEach(function (m) {
+            m.filtered = !m.filtered;
+        });
+        cluster.ProcessView();
+    };
+
+    map.addLayer(cluster);
+</script>
+</body>
+</html>

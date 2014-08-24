@@ -5,11 +5,14 @@ module PruneCluster {
 	// exceed this ratio 
 	var ratioForNativeSort = 0.2;
 
+	// The position is the real position of the object
+	// using a standard coordinate system, as WGS 84
 	export interface Position {
 		lat: number;
 		lng: number;
 	}
 
+	// The point is a project position on the client display
 	export class Point {
 		x: number;
 		y: number;
@@ -22,16 +25,36 @@ module PruneCluster {
 		maxLng: number;
 	}
 
-
 	export class ClusterObject {
+		// Map position of the object
 		public position: Position;
+
+		// An attached javascript object, storing user data
 		public data: any;
+
+		// An hashCode identifing the object
+		public hashCode: number;
 	}
+
+	// Hidden variable counting the number of created hashcode
+	var hashCodeCounter: number = 1;
+
+	// Number.MAX_SAFE_INTEGER
+	var maxHashCodeValue = Math.pow(2, 53) - 1;
 
 	export class Marker extends ClusterObject {
 
+		// The category of the Marker, ideally a number between 0 and 7
+		// can also be a string
 		public category: number;
+
+		// The weight of a Marker can influence the cluster icon or the cluster position
 		public weight: number;
+
+		// If filtered is true, the marker is not included in the clustering
+		// With some datasets, it's faster to keep the markers inside PruneCluster and to
+		// use the filtering feature. With some other datasets, it's better to remove the
+		// markers
 		public filtered: boolean;
 
 		constructor(lat: number, lng: number, data: {} = {},
@@ -42,36 +65,59 @@ module PruneCluster {
 			this.weight = weight;
 			this.category = category;
 			this.filtered = filtered;
+
+			// The hashCode is used to identify the Cluster object
+			this.hashCode = hashCodeCounter++;
 		}
 
 		public Move(lat: number, lng: number) {
 			this.position.lat = lat;
 			this.position.lng = lng;
 		}
-        
-        public SetData(data: any) {
-            this.data = data;
-        }
 
+		// Apply the data object
+		public SetData(data: any) {
+			for (var key in data) {
+				this.data[key] = data[key];
+			}
+        }
 	}
 
 	export class Cluster extends ClusterObject {
+		// Cluster area
 		public bounds: Bounds;
+
+		// Number of markers clustered
 		public population: number;
 
+		// Average position of the cluster,
+		// taking into account the cluster weight
 		public averagePosition: Position;
+
+		// Statistics table
+		// The key is the category and the value is the sum
+		// of the weights
 		public stats: number[];
 
+		// The total weight of the cluster
 		public totalWeight: number;
 
+		// The last marker added in the cluster
+		// Usefull when the cluster contains only one marker
 		public lastMarker: Marker;
-		private _clusterMarkers: Marker[];
 
+		// If enabled, the cluster contains a list of his marker
+		// It implies a performance cost, but you can use it
+		// for building the icon, if your dataset is not too big
 		public static ENABLE_MARKERS_LIST: boolean = false;
+
+		// The list of markers in the cluster
+		private _clusterMarkers: Marker[];
 
 		constructor(marker?: Marker) {
 			super();
 
+			// Create a stats table optimized for categories between 0 and 7
 			this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
 			this.data = {};
 
@@ -79,9 +125,16 @@ module PruneCluster {
 				this._clusterMarkers = [];
 			}
 
-			if (!marker) return;
+			// You can provide a marker directly in the constructor
+			// It's like using AddMarker, but a bit faster
+			if (!marker) {
+				this.hashCode = 1;
+				return;
+			}
 
 			this.lastMarker = marker;
+
+			this.hashCode = 31 + marker.hashCode;
 
 			this.population = 1;
 
@@ -109,6 +162,14 @@ module PruneCluster {
 				this._clusterMarkers.push(marker);
 			}
 
+			var h = this.hashCode;
+			h = (h << 5 - h) + marker.hashCode;
+			if (h >= maxHashCodeValue) {
+				this.hashCode = h % maxHashCodeValue;
+			} else {
+				this.hashCode = h;
+			}
+
 			this.lastMarker = marker;
 
 			// Compute the weighted arithmetic mean
@@ -134,6 +195,7 @@ module PruneCluster {
 		}
 
 		public Reset() {
+			this.hashCode = 1;
 			this.lastMarker = undefined;
 			this.population = 0;
 			this.totalWeight = 0;
@@ -175,6 +237,12 @@ module PruneCluster {
 		}
 
 		public ApplyCluster(newCluster: Cluster) {
+
+			this.hashCode = this.hashCode * 41 + newCluster.hashCode * 43;
+			if (this.hashCode > maxHashCodeValue) {
+				this.hashCode = this.hashCode = maxHashCodeValue;
+			}
+
 			var weight = newCluster.totalWeight,
 				currentTotalWeight = this.totalWeight,
 				newWeight = weight + currentTotalWeight;
@@ -190,11 +258,13 @@ module PruneCluster {
 			this.population += newCluster.population;
 			this.totalWeight = newWeight;
 
+			// Merge the bounds 
 			this.bounds.minLat = Math.min(this.bounds.minLat, newCluster.bounds.minLat);
 			this.bounds.minLng = Math.min(this.bounds.minLng, newCluster.bounds.minLng);
 			this.bounds.maxLat = Math.max(this.bounds.maxLat, newCluster.bounds.maxLat);
 			this.bounds.maxLng = Math.max(this.bounds.maxLng, newCluster.bounds.maxLng);
 
+			// Merge the statistics
 			for (var category in newCluster.stats) {
 				if (newCluster.stats.hasOwnProperty(category)) {
 					if (this.stats.hasOwnProperty(category)) {
@@ -205,6 +275,7 @@ module PruneCluster {
 				}
 			}
 
+			// Merge the clusters lists
 			if (Cluster.ENABLE_MARKERS_LIST) {
 				this._clusterMarkers.concat(newCluster.GetClusterMarkers());
 			}
@@ -339,13 +410,11 @@ module PruneCluster {
 
 			// Binary search for the first interesting marker
 			var firstIndex = this._indexLowerBoundLng(extendedBounds.minLng);
-			//console.log("Start index: ", firstIndex);
 
 			// Just some shortcuts
 			var markers = this._markers,
 				clusters = this._clusters;
 
-//			var cpt = 0;
 
 			var workingClusterList = clusters.slice(0);
 
@@ -358,7 +427,6 @@ module PruneCluster {
 				// If the marker longitute is higher than the view longitude,
 				// we can stop to iterate
 				if (markerPosition.lng > extendedBounds.maxLng) {
-					//console.log("End index: ", i);
 					break;
 				}
 
@@ -401,12 +469,9 @@ module PruneCluster {
 						clusters.push(cluster);
 						workingClusterList.push(cluster);
 					}
-
-//					++cpt;
 				}
 			}
 
-			//console.log("Cpt: ", cpt);
 
 			// Time to remove empty clusters
 			var newClustersList: Cluster[] = [];
@@ -417,7 +482,6 @@ module PruneCluster {
 				}
 			}
 
-			//console.log("Avant: ", clusters.length, "Apres: ", newClustersList.length);
 			this._clusters = newClustersList;
 
 			// We keep the list of markers sorted, it's faster
