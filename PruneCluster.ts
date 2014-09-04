@@ -30,7 +30,7 @@ module PruneCluster {
 		public position: Position;
 
 		// An attached javascript object, storing user data
-		public data: {};
+		public data: any;
 
 		// An hashCode identifing the object
 		public hashCode: number;

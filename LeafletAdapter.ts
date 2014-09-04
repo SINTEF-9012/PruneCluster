@@ -12,6 +12,7 @@ module PruneCluster {
 		ProcessView: () => void;
 		FitBounds: () => void;
 		GetMarkers: () => Marker[];
+		RedrawIcons: (processView?: boolean) => void;
 
 		BuildLeafletCluster: (cluster: Cluster, position: L.LatLng) => L.ILayer;
 		BuildLeafletClusterIcon: (cluster: Cluster) => L.Icon;
@@ -56,6 +57,9 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 		// Enable the spiderfier
 		this.spiderfier = new PruneClusterLeafletSpiderfier(this);
+
+		this._hardMove = false;
+		this._resetIcons = false;
 	},
 
 	RegisterMarker: function(marker: PruneCluster.Marker) {
@@ -189,7 +193,8 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		var map = this._map,
 			bounds = map.getBounds(),
 			zoom = map.getZoom(),
-			marginRatio = this.clusterMargin / this.Cluster.Size;
+			marginRatio = this.clusterMargin / this.Cluster.Size,
+			resetIcons = this._resetIcons;
 
 		var southWest = bounds.getSouthWest(),
 			northEast = bounds.getNorthEast();
@@ -279,12 +284,15 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 				// If it's a single marker and it doesn't have changed
 				if (cluster.population === 1 && data._leafletOldPopulation === 1 && cluster.hashCode === oldMarker._hashCode) {
-					// Update if the zoom level has changed
-					if (oldMarker._zoomLevel !== zoom) {
+					// Update if the zoom level has changed or if we need to reset the icon
+					if (resetIcons || oldMarker._zoomLevel !== zoom || cluster.lastMarker.data.forceIconRedraw) {
 						this.PrepareLeafletMarker(
 							oldMarker,
 							cluster.lastMarker.data,
 							cluster.lastMarker.category);
+						if (cluster.lastMarker.data.forceIconRedraw) {
+							cluster.lastMarker.data.forceIconRedraw = false;
+						}
 					}
 					// Update the position
 					oldMarker.setLatLng(position);
@@ -297,8 +305,8 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					// Update the position
 					oldMarker.setLatLng(position);
 
-					// Update the icon if the population of his content has changed
-					if (cluster.population != data._leafletOldPopulation ||
+					// Update the icon if the population of his content has changed or if we need to reset the icon
+					if (resetIcons || cluster.population != data._leafletOldPopulation ||
 						cluster.hashCode !== data._leafletOldHashCode) {
 						oldMarker.setIcon(this.BuildLeafletClusterIcon(cluster));
 					}
@@ -378,11 +386,17 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 							if (marker._population === 1 && jcluster.population === 1 &&
 								marker._hashCode === jcluster.hashCode) {
 
-								// TODO maybe not usefull
-								this.PrepareLeafletMarker(
-									marker,
-									jcluster.lastMarker.data,
-									jcluster.lastMarker.category);
+								// I we need to reset the icon
+								if (resetIcons || jcluster.lastMarker.data.forceIconRedraw) {
+									this.PrepareLeafletMarker(
+										marker,
+										jcluster.lastMarker.data,
+										jcluster.lastMarker.category);
+
+									if (jcluster.lastMarker.data.forceIconRedraw) {
+										jcluster.lastMarker.data.forceIconRedraw = false;
+									}
+								}
 
 								// Update the position
 								marker.setLatLng(jdata._leafletPosition);
@@ -470,7 +484,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			}
 		}, 1);
 
-		// Remove the leaflet objects
+		// Seventh step : Remove the leaflet objects
 		if (toRemove.length > 0) {
 			// Immediate remove
 			if (this._hardMove) {
@@ -489,6 +503,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 		this._objectsOnMap = newObjectsOnMap;
 		this._hardMove = false;
+		this._resetIcons = false;
 	},
 
 	FitBounds: function() {
@@ -502,5 +517,12 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 	GetMarkers: function() {
 		return this.Cluster.GetMarkers();
+	},
+
+	RedrawIcons: function (processView: boolean = true) {
+		this._resetIcons = true;
+		if (processView) {
+			this.ProcessView();
+		}
 	}
 });
