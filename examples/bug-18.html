@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Realworld 50k</title>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+    <link rel="stylesheet" href="examples.css"/>
+</head>
+<body>
+<div id="map"></div>
+<a href="#" id="delete">Switch</a>
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView(new L.LatLng(59.911111, 10.752778), 12);
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    // The GetClusterMarkers method is not working by default
+    PruneCluster.Cluster.ENABLE_MARKERS_LIST = true;
+
+    var leafletView = new PruneClusterForLeaflet();
+    
+    leafletView.BuildLeafletClusterIcon = function (cluster) {
+    	var markers = cluster.GetClusterMarkers();
+    	//console.log('blci', markers.length, cluster.population);
+    	console.assert(markers.length === cluster.population, 'Not match!');
+    	//console.log(markers);
+
+    	return PruneClusterForLeaflet.prototype.BuildLeafletClusterIcon.call(this, cluster);
+    };
+
+    var size = 10000;
+    var markers = [];
+    for (var i = 0; i < size; ++i) {
+    	var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * Math.random() * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * Math.random() * 0.00002 * size);
+
+    	markers.push(marker);
+    	leafletView.RegisterMarker(marker);
+    }
+
+    window.setInterval(function () {
+    	for (i = 0; i < size / 2; ++i) {
+    		var coef = i < size / 8 ? 10 : 1;
+    		var ll = markers[i].position;
+    		ll.lat += (Math.random() - 0.5) * 0.00001 * coef;
+    		ll.lng += (Math.random() - 0.5) * 0.00002 * coef;
+    	}
+
+    	leafletView.ProcessView();
+    }, 500);
+
+    map.addLayer(leafletView);
+</script>
+</body>
+</html>
