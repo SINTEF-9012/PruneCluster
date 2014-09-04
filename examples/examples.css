@@ -1,73 +1,13 @@
-﻿html, body, #map {
+@import url('../dist/LeafletStyleSheet.css');
+
+html, body, #map {
 	width:100%;
 	height:100%;
 	margin: 0;
 	padding: 0;
 	font-family: sans-serif;
 }
-.prunecluster {
-	font-size: 12px;
-	border-radius: 20px;
-	transition: all 0.3s linear;
-}
-.leaflet-marker-icon:not(.no-anim),
-.leaflet-marker-shadow:not(.no-anim),
-.leaflet-markercluster-icon:not(.no-anim) {
-	transition: all 0.3s linear;
-}
 
-.leaflet-zoom-anim .leaflet-zoom-animated.leaflet-marker-icon:not(.no-anim),
-.leaflet-zoom-anim .leaflet-zoom-animated.leaflet-marker-shadow:not(.no-anim),
-.leaflet-zoom-anim .leaflet-zoom-animated.leaflet-markercluster-icon:not(.no-anim) {
-    transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
-}
-.prunecluster div {
-	width: 30px;
-	height: 30px;
-	text-align: center;
-	margin-left: 5px;
-	margin-top: 5px;
-	border-radius: 50%;
-}
-.prunecluster div span {
-	line-height: 30px;
-}
-
-.prunecluster-small {
-	background-color: rgba(181, 226, 140, 0.6);
-}
-
-.prunecluster-small div {
-	width: 28px;
-	height: 28px;
-	background-color: rgba(110, 204, 57, 0.6);
-}
-
-.prunecluster-small div span {
-	line-height: 28px;
-}
-
-.prunecluster-medium {
-	background-color: rgba(241, 211, 87, 0.6);
-}
-
-.prunecluster-medium div {
-	background-color: rgba(240, 194, 12, 0.6);
-}
-
-.prunecluster-large {
-	background-color: rgba(253, 156, 115, 0.6);
-}
-
-.prunecluster-large div {
-	width: 34px;
-	height: 34px;
-	background-color: rgba(241, 128, 23, 0.6);
-}
-
-.prunecluster-large div span {
-	line-height: 34px;
-}
 div#size, a#delete {
 	position: absolute;
 	right: 1em;

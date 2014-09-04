@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 		clean: {
 			ts: {
 				files: [{
-					src:["dist/*.js", "dist/*.d.ts", "dist/*.map"]
+					src:["dist/*.js", "dist/*.d.ts", "dist/*.map", "dist/*.css"]
 				}]
 			}
 		},
@@ -35,11 +35,18 @@ module.exports = function(grunt) {
 					'dist/PruneCluster.min.js' : ['dist/PruneCluster.js']
 				}
 			}
+		},
+		copy: {
+			css: {
+				src: 'LeafletStyleSheet.css',
+				dest: 'dist/LeafletStyleSheet.css'
+			}
 		}
 	});
 
 	grunt.registerTask('build', [
 		'clean:ts',
+		'copy:css',
 		'ts:build',
 		'uglify'
 	]);

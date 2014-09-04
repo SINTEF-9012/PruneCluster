@@ -594,6 +594,10 @@ module PruneCluster {
 			return this._markers;
 		}
 
+		public GetPopulation(): number {
+			return this._markers.length;
+		}
+
 		public ResetClusters() {
 			this._clusters = [];
 		}
