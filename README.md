@@ -113,7 +113,28 @@ marker.data.ID = '76ez';
 ```
 
 #### Setting up a Leaflet icon or a Leaflet popup
-In order to improve the performances, the Leaflet marker is created only if needed and can be recycled. You can setup the marker by overriding the PreapareLeafletMarker method.
+
+You can attach to the markers an icon object and a popup content
+```javascript
+marker.data.icon = L.icon(...);  // See http://leafletjs.com/reference.html#icon
+marker.data.popup = 'Popup content';
+```
+
+#### Faster leaflet icons
+
+If you have a lot of markers, you can create the icons and popups on the fly in order to improve the performances.
+
+```javascript
+function createIcon(data, category) {
+    return L.icon(...);
+}
+
+...
+
+marker.data.icon = createIcon;
+```
+
+You can also override the PreapareLeafletMarker method.
 
 ```javascript
 pruneCluster.PrepareLeafletMarker = function(leafletMarker, data) {
@@ -145,6 +166,22 @@ pruneCluster.BuildLeafletClusterIcon = function(cluster) {
 };
 ```
 
+#### Redraw the icons
+
+Marker icon redrawing with a flag:
+
+```javascript
+marker.data.forceIconRedraw = true;
+
+...
+
+pruneCluster.ProcessView();
+```
+
+Redraw all the icons:
+```javascript
+pruneCluster.RedrawIcons();
+```
 
 ### Acknowledgements
 
