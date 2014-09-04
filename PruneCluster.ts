@@ -121,15 +121,19 @@ module PruneCluster {
 			this.stats = [0, 0, 0, 0, 0, 0, 0, 0];
 			this.data = {};
 
-			if (Cluster.ENABLE_MARKERS_LIST) {
-				this._clusterMarkers = [];
-			}
 
 			// You can provide a marker directly in the constructor
 			// It's like using AddMarker, but a bit faster
 			if (!marker) {
 				this.hashCode = 1;
+				if (Cluster.ENABLE_MARKERS_LIST) {
+					this._clusterMarkers = [];
+				}
 				return;
+			}
+
+			if (Cluster.ENABLE_MARKERS_LIST) {
+				this._clusterMarkers = [marker];
 			}
 
 			this.lastMarker = marker;
@@ -277,7 +281,9 @@ module PruneCluster {
 
 			// Merge the clusters lists
 			if (Cluster.ENABLE_MARKERS_LIST) {
-				this._clusterMarkers.concat(newCluster.GetClusterMarkers());
+				newCluster.GetClusterMarkers().forEach((m) => {
+					this._clusterMarkers.push(m);
+				});
 			}
 		}
 	}
