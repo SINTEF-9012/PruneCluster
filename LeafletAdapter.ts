@@ -18,6 +18,21 @@ module PruneCluster {
 		BuildLeafletMarker: (marker: Marker, position: L.LatLng) => L.Marker;
 		PrepareLeafletMarker: (marker: L.Marker, data: {}, category: number) => void;
 	}
+
+	export interface LeafletMarker extends L.Marker {
+		_population?: number;
+		_hashCode?: number;
+		_zoomLevel?: number;
+		_removeFromMap?: boolean;
+	}
+
+	export interface ILeafletAdapterData {
+		_leafletMarker?: LeafletMarker;
+		_leafletCollision?: boolean;
+		_leafletOldPopulation?: number;
+		_leafletOldHashCode?: number;
+		_leafletPosition?: L.LatLng;
+	}
 }
 
 
@@ -77,7 +92,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		return m;
 	},
 
-	BuildLeafletClusterIcon: function(cluster: PruneCluster.Cluster): L.Icon {
+	BuildLeafletClusterIcon: (cluster: PruneCluster.Cluster): L.Icon => {
 		var c = 'prunecluster prunecluster-';
 		var iconSize = 38;
 		if (cluster.population < 10) {
@@ -103,7 +118,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		return m;
 	},
 
-	PrepareLeafletMarker: function(marker: L.Marker, data: {}, category: number) {
+	PrepareLeafletMarker: (marker: L.Marker, data: {}, category: number) => {
 	},
 
 	onAdd: function(map: L.Map) {
@@ -175,7 +190,6 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			maxLat: northEast.lat,
 			maxLng: northEast.lng
 		});
-//		console.log("time: ", (+new Date()) - t);
 
 		var objectsOnMap: PruneCluster.Cluster[] = this._objectsOnMap,
 			newObjectsOnMap: PruneCluster.Cluster[] = [];
@@ -183,7 +197,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		// By default, all the objects should be removed
 		// the removeFromMap property will be 
 		for (var i = 0, l = objectsOnMap.length; i < l; ++i) {
-			objectsOnMap[i].data._leafletMarker._removeFromMap = true;
+			(<PruneCluster.ILeafletAdapterData>objectsOnMap[i].data)._leafletMarker._removeFromMap = true;
 		}
 
 		var clusterCreationList: PruneCluster.Cluster[] = [];
@@ -194,7 +208,8 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		var workingList: PruneCluster.Cluster[] = [];
 
 		for (i = 0, l = clusters.length; i < l; ++i) {
-			var icluster = clusters[i];
+			var icluster = clusters[i],
+				iclusterData = <PruneCluster.ILeafletAdapterData> icluster.data;
 
 			var latMargin = (icluster.bounds.maxLat - icluster.bounds.minLat) * marginRatio,
 				lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
@@ -216,14 +231,14 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					newMaxLat = icluster.averagePosition.lat + latMargin;
 
 				if (oldMaxLng > newMinLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat) {
-					icluster.data._leafletCollision = true;
+					iclusterData._leafletCollision = true;
 					//c.data._leafletCollision = true;
 					c.ApplyCluster(icluster);
 					break;
 				}
 			}
 
-			if (!icluster.data._leafletCollision) {
+			if (!iclusterData._leafletCollision) {
 				workingList.push(icluster);
 			}
 
@@ -232,22 +247,23 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		clusters.forEach((cluster: PruneCluster.Cluster) => {
 			var m = undefined;
 			var position: L.LatLng;
+			var data = <PruneCluster.ILeafletAdapterData> cluster.data;
 
 			//latMargin = (cluster.bounds.maxLat - cluster.bounds.minLat) * marginRatio;
 			//lngMargin = (cluster.bounds.maxLng - cluster.bounds.minLng) * marginRatio;
 
-			if (cluster.data._leafletCollision) {
-				cluster.data._leafletCollision = false;
-				cluster.data._leafletOldPopulation = 0;
-				cluster.data._leafletOldHashCode = 0;
+			if (data._leafletCollision) {
+				data._leafletCollision = false;
+				data._leafletOldPopulation = 0;
+				data._leafletOldHashCode = 0;
 				return;
 			} else {
 				position = new L.LatLng(cluster.averagePosition.lat, cluster.averagePosition.lng);
 			}
 
-			var oldMarker = cluster.data._leafletMarker;
+			var oldMarker = data._leafletMarker;
 			if (oldMarker) {
-				if (cluster.population === 1 && cluster.data._leafletOldPopulation === 1 && cluster.hashCode === oldMarker._hashCode) {
+				if (cluster.population === 1 && data._leafletOldPopulation === 1 && cluster.hashCode === oldMarker._hashCode) {
 					if (oldMarker._zoomLevel !== zoom) {
 						this.PrepareLeafletMarker(
 							oldMarker,
@@ -256,17 +272,17 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					}
 					oldMarker.setLatLng(position);
 					m = oldMarker;
-				} else if (cluster.population > 1 && cluster.data._leafletOldPopulation > 1 && (oldMarker._zoomLevel === zoom ||
-					cluster.data._leafletPosition.equals(position))) {
+				} else if (cluster.population > 1 && data._leafletOldPopulation > 1 && (oldMarker._zoomLevel === zoom ||
+					data._leafletPosition.equals(position))) {
 					oldMarker.setLatLng(position);
 
-					if (cluster.population != cluster.data._leafletOldPopulation ||
-						cluster.hashCode !== cluster.data._leafletOldHashCode) {
+					if (cluster.population != data._leafletOldPopulation ||
+						cluster.hashCode !== data._leafletOldHashCode) {
 						oldMarker.setIcon(this.BuildLeafletClusterIcon(cluster));
 					}
 
-					cluster.data._leafletOldPopulation = cluster.population;
-					cluster.data._leafletOldHashCode = cluster.hashCode;
+					data._leafletOldPopulation = cluster.population;
+					data._leafletOldHashCode = cluster.hashCode;
 					m = oldMarker;
 				}
 
@@ -275,16 +291,16 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			if (!m) {
 				clusterCreationList.push(cluster);
 
-				cluster.data._leafletPosition = position;
-				cluster.data._leafletOldPopulation = cluster.population;
-				cluster.data._leafletOldHashCode = cluster.hashCode;
+				data._leafletPosition = position;
+				data._leafletOldPopulation = cluster.population;
+				data._leafletOldHashCode = cluster.hashCode;
 			} else {
 				m._removeFromMap = false;
 				m._zoomLevel = zoom;
 				m._hashCode = cluster.hashCode;
 				m._population = cluster.population;
-				cluster.data._leafletMarker = m;
-				cluster.data._leafletPosition = position;
+				data._leafletMarker = m;
+				data._leafletPosition = position;
 				newObjectsOnMap.push(cluster);
 			}
 
@@ -293,10 +309,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		var toRemove = [];
 		for (i = 0, l = objectsOnMap.length; i < l; ++i) {
 			icluster = objectsOnMap[i];
-			var data = icluster.data,
-				marker = data._leafletMarker;
+			var idata =  <PruneCluster.ILeafletAdapterData> icluster.data,
+				marker = idata._leafletMarker;
 
-			if (data._leafletMarker._removeFromMap) {
+			if (idata._leafletMarker._removeFromMap) {
 
 				var remove = true;
 
@@ -307,7 +323,8 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 						lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
 
 					for (j = 0, ll = clusterCreationList.length; j < ll; ++j) {
-						var jcluster = clusterCreationList[j];
+						var jcluster = clusterCreationList[j],
+							jdata = <PruneCluster.ILeafletAdapterData> jcluster.data;
 						var pb = jcluster.averagePosition;
 
 						var oldMinLng = pa.lng - lngMargin,
@@ -324,25 +341,24 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 							if (marker._population === 1 && jcluster.population === 1 &&
 								marker._hashCode === jcluster.hashCode) {
-								console.log(marker._hashCode, jcluster.hashCode)
 								this.PrepareLeafletMarker(
 									marker,
 									jcluster.lastMarker.data,
 									jcluster.lastMarker.category);
-								marker.setLatLng(jcluster.data._leafletPosition);
+								marker.setLatLng(jdata._leafletPosition);
 								remove = false;
 							} else if (marker._population > 1 && jcluster.population > 1) {
-								marker.setLatLng(jcluster.data._leafletPosition);
+								marker.setLatLng(jdata._leafletPosition);
 								remove = false;
 								marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
-								jcluster.data._leafletOldPopulation = jcluster.population;
-								jcluster.data._leafletOldHashCode = jcluster.hashCode;
+								jdata._leafletOldPopulation = jcluster.population;
+								jdata._leafletOldHashCode = jcluster.hashCode;
 								marker._population = jcluster.population;
 							}
 
 							if (!remove) {
 
-								jcluster.data._leafletMarker = marker;
+								jdata._leafletMarker = marker;
 								newObjectsOnMap.push(jcluster);
 
 								clusterCreationList.splice(j, 1);
@@ -357,16 +373,18 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 				if (remove) {
 					if (!this._hardMove) {
-						data._leafletMarker.setOpacity(0);
+						idata._leafletMarker.setOpacity(0);
 					}
-					toRemove.push(data._leafletMarker);
+					toRemove.push(idata._leafletMarker);
 				}
 			}
 		}
 
 		for (i = 0, l = clusterCreationList.length; i < l; ++i) {
-			icluster = clusterCreationList[i];
-			var iposition = icluster.data._leafletPosition;
+			icluster = clusterCreationList[i],
+			idata = <PruneCluster.ILeafletAdapterData> icluster.data;
+
+			var iposition = idata._leafletPosition;
 
 			var creationMarker: any;
 			if (icluster.population === 1) {
@@ -383,7 +401,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			creationMarker._population = icluster.population;
 			opacityUpdateList.push(creationMarker);
 
-			icluster.data._leafletMarker = creationMarker;
+			idata._leafletMarker = creationMarker;
 
 			newObjectsOnMap.push(icluster);
 		}

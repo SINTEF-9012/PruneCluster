@@ -30,7 +30,7 @@ module PruneCluster {
 		public position: Position;
 
 		// An attached javascript object, storing user data
-		public data: any;
+		public data: {};
 
 		// An hashCode identifing the object
 		public hashCode: number;
@@ -552,6 +552,8 @@ module PruneCluster {
 			return result;
 		}
 
+		// Compute the bounds of the list of markers
+		// It's slow O(n)
 		public ComputeBounds(markers: Marker[]): Bounds {
 
 			if (!markers || !markers.length) {
