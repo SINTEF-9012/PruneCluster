@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
@@ -21,7 +21,7 @@
     var map = L.map("map", {
         attributionControl: false,
         zoomControl: false
-    }).setView(new L.LatLng(59.911111, 10.752778), 17);
+    }).setView(new L.LatLng(59.911111, 10.752778), 7);
 
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         detectRetina: true,
@@ -40,16 +40,20 @@
 
 
     for (var i = 0; i < size; ++i) {
-        var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * 0.1 * size, 10.752778 + (Math.random() - 0.5) * 0.2 * size, {
-            name: "Roger "+i,
-            iconUrl: Math.random() > 0.5 ? 'helicopter.png' : 'airplane.png'
-        });
+	    var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * 0.1 * size, 10.752778 + (Math.random() - 0.5) * 0.2 * size, {
+		    popup: "Roger " + i,
+		    icon: L.icon({
+			    iconUrl: Math.random() > 0.5 ? 'helicopter.png' : 'airplane.png',
+			    iconSize: [48, 48]
+		    })
+	    });
 
         markers.push(marker);
         leafletView.RegisterMarker(marker);
     }
 
-    leafletView.PrepareLeafletMarker  = function(leafletMarker, data) {
+	/*
+	leafletView.PrepareLeafletMarker  = function(leafletMarker, data) {
         leafletMarker.setIcon(
             L.icon({
                 iconUrl: data.iconUrl,
@@ -58,18 +62,18 @@
         );
 
         if (leafletMarker.getPopup()) {
-            leafletMarker.setPopupContent(data.name);
+            leafletMarker.setPopupContent(data.popup);
         } else {
-            leafletMarker.bindPopup(data.name);
+            leafletMarker.bindPopup(data.popup);
         }
-    }
+    }*/
 
     window.setInterval(function () {
         for (i = 0; i < size / 2; ++i) {
             var coef = i < size / 8 ? 10 : 1;
             var ll = markers[i].position;
-            ll.lat += (Math.random() - 0.5) * 0.00001 * coef;
-            ll.lng += (Math.random() - 0.5) * 0.00002 * coef;
+            ll.lat += (Math.random() - 0.5) * 0.0001 * coef;
+            ll.lng += (Math.random() - 0.5) * 0.0002 * coef;
         }
 
         leafletView.ProcessView();

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
@@ -34,20 +34,12 @@
     var size = 100;
     var markers = [];
     for (var i = 0; i < size; ++i) {
-        var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * 0.00002 * size, {
-            name: "Roger "+i
+        var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * 0.0001 * size, 10.752778 + (Math.random() - 0.5) * 0.0002 * size, {
+            popup: "Roger "+i
         });
 
         markers.push(marker);
         leafletView.RegisterMarker(marker);
-    }
-
-    leafletView.PrepareLeafletMarker  = function(leafletMarker, data) {
-        if (leafletMarker.getPopup()) {
-            leafletMarker.setPopupContent(data.name);
-        } else {
-            leafletMarker.bindPopup(data.name);
-        }
     }
 
     window.setInterval(function () {

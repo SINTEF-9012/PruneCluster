@@ -132,7 +132,23 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		return m;
 	},
 
-	PrepareLeafletMarker: (marker: L.Marker, data: {}, category: number) => {
+	PrepareLeafletMarker: (marker: L.Marker, data: any, category: number) => {
+		if (data.icon) {
+			if (typeof data.icon === 'function') {
+				marker.setIcon(data.icon(data, category));
+			} else {
+				marker.setIcon(data.icon);
+			}
+		}
+
+		if (data.popup) {
+			var content = typeof data.popup === 'function' ? data.popup(data, category) : data.popup;
+			if (marker.getPopup()) {
+				marker.setPopupContent(content, data.popupOptions);
+			} else {
+				marker.bindPopup(content, data.popupOptions);
+			}
+		}
 	},
 
 	onAdd: function(map: L.Map) {
