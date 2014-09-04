@@ -92,12 +92,13 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		return m;
 	},
 
-	BuildLeafletClusterIcon: (cluster: PruneCluster.Cluster): L.Icon => {
+	BuildLeafletClusterIcon: function(cluster: PruneCluster.Cluster): L.Icon {
 		var c = 'prunecluster prunecluster-';
 		var iconSize = 38;
-		if (cluster.population < 10) {
+		var maxPopulation = this.Cluster.GetPopulation();
+		if (cluster.population < Math.max(10, maxPopulation*0.01)) {
 			c += 'small';
-		} else if (cluster.population < 100) {
+		} else if (cluster.population < Math.max(100, maxPopulation * 0.05)) {
 			c += 'medium';
 			iconSize = 40;
 		} else {
