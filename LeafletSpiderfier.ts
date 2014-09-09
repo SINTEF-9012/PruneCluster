@@ -38,7 +38,9 @@ var PruneClusterLeafletSpiderfier = ((<any>L).Layer ? (<any>L).Layer : L.Class).
 
 	Spiderfy: function(data) {
 		this.Unspiderfy();
-		var markers = data.markers;
+		var markers = data.markers.filter(function(marker) {
+			return !marker.filtered;
+		});
 
 		this._currentCenter = data.center;
 
