@@ -162,7 +162,6 @@ var PruneCluster;
         };
 
         Cluster.prototype.ApplyCluster = function (newCluster) {
-            var _this = this;
             this.hashCode = this.hashCode * 41 + newCluster.hashCode * 43;
             if (this.hashCode > maxHashCodeValue) {
                 this.hashCode = this.hashCode = maxHashCodeValue;
@@ -193,9 +192,7 @@ var PruneCluster;
             }
 
             if (Cluster.ENABLE_MARKERS_LIST) {
-                newCluster.GetClusterMarkers().forEach(function (m) {
-                    _this._clusterMarkers.push(m);
-                });
+                this._clusterMarkers = this._clusterMarkers.concat(newCluster.GetClusterMarkers());
             }
         };
         Cluster.ENABLE_MARKERS_LIST = false;
@@ -789,7 +786,8 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
 
             creationMarker.addTo(map);
 
-            L.DomUtil.addClass(creationMarker._icon, "no-anim");
+            if (creationMarker._icon)
+                L.DomUtil.addClass(creationMarker._icon, "no-anim");
             creationMarker.setOpacity(0);
             opacityUpdateList.push(creationMarker);
 
@@ -804,7 +802,8 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         window.setTimeout(function () {
             for (i = 0, l = opacityUpdateList.length; i < l; ++i) {
                 var m = opacityUpdateList[i];
-                L.DomUtil.removeClass(m._icon, "no-anim");
+                if (m._icon)
+                    L.DomUtil.removeClass(m._icon, "no-anim");
                 m.setOpacity(1);
             }
         }, 1);
@@ -871,7 +870,9 @@ var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({
     Spiderfy: function (data) {
         var _this = this;
         this.Unspiderfy();
-        var markers = data.markers;
+        var markers = data.markers.filter(function (marker) {
+            return !marker.filtered;
+        });
 
         this._currentCenter = data.center;
 
