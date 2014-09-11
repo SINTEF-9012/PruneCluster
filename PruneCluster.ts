@@ -281,9 +281,7 @@ module PruneCluster {
 
 			// Merge the clusters lists
 			if (Cluster.ENABLE_MARKERS_LIST) {
-				newCluster.GetClusterMarkers().forEach((m) => {
-					this._clusterMarkers.push(m);
-				});
+				this._clusterMarkers = this._clusterMarkers.concat(newCluster.GetClusterMarkers());
 			}
 		}
 	}
