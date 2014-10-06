@@ -167,7 +167,7 @@ module PruneCluster {
 			}
 
 			var h = this.hashCode;
-			h = h * 31 + marker.hashCode;
+			h = ((h << 5) - h) + marker.hashCode;
 			if (h >= maxHashCodeValue) {
 				this.hashCode = h % maxHashCodeValue;
 			} else {
