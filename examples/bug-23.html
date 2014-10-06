@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Realworld 50k</title>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+    <link rel="stylesheet" href="examples.css"/>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView(new L.LatLng(-20, -30), 3);
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    // The GetClusterMarkers method is not working by default
+    //PruneCluster.Cluster.ENABLE_MARKERS_LIST = true;
+
+    var leafletView = new PruneClusterForLeaflet();
+
+    var events = [
+	[-23.547500, -46.636110, "1997-03-31"],
+	[-24.001270, -46.491210, "1999-02-20"],
+	[-22.902780, -43.207500, "1999-05-04"],
+	[-22.902780, -43.207500, "2005-03-30"]];
+
+    leafletView.Cluster.Size = 10;
+
+
+    var size = events.length;
+    var markers = [];
+    for (var i = 0; i < size; ++i) {
+    	var marker = new PruneCluster.Marker(events[i][0], events[i][1]);
+
+    	markers.push(marker);
+    	leafletView.RegisterMarker(marker);
+    }
+
+    map.addLayer(leafletView);
+
+    /*var i = 0;
+	var g = window.setInterval(function() {
+		for (var j = 0; j < size; ++j) {
+			markers[j].filtered = Math.random() > 0.5;
+		}
+		leafletView.ProcessView();
+		if (++i > 500) {
+			window.clearInterval(g);
+		}
+	}, 100);*/
+	function triggerBug() {
+		for (var i = 0; i < 500; ++i) {
+			for (var j = 0; j < size; ++j) {
+				markers[j].filtered = Math.random() > 0.5;
+			}
+			leafletView.ProcessView();
+		}
+	}
+
+    triggerBug();
+</script>
+</body>
+</html>

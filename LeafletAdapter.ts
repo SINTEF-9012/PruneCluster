@@ -60,6 +60,9 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 		this._hardMove = false;
 		this._resetIcons = false;
+
+		this._removeTimeoutId = 0;
+		this._markersRemoveListTimeout = [];
 	},
 
 	RegisterMarker: function(marker: PruneCluster.Marker) {
@@ -224,11 +227,14 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		});
 
 		var objectsOnMap: PruneCluster.Cluster[] = this._objectsOnMap,
-			newObjectsOnMap: PruneCluster.Cluster[] = [];
+			newObjectsOnMap: PruneCluster.Cluster[] = [],
+			markersOnMap: PruneCluster.LeafletMarker[] = new Array(objectsOnMap.length);
 
 		// Second step : By default, all the leaflet markers should be removed
 		for (var i = 0, l = objectsOnMap.length; i < l; ++i) {
-			(<PruneCluster.ILeafletAdapterData>objectsOnMap[i].data)._leafletMarker._removeFromMap = true;
+			var marker = (<PruneCluster.ILeafletAdapterData>objectsOnMap[i].data)._leafletMarker;
+			markersOnMap[i] = marker;
+			marker._removeFromMap = true;
 		}
 
 		var clusterCreationList: PruneCluster.Cluster[] = [];
@@ -360,11 +366,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		// Fifth step : recycle leaflet markers using a sweep and prune algorithm
 		// The purpose of this step is to make smooth transition when a cluster or a marker
 		// is moving on the map and its grid cell changes
-		var toRemove = [];
 		for (i = 0, l = objectsOnMap.length; i < l; ++i) {
 			icluster = objectsOnMap[i];
-			var idata =  <PruneCluster.ILeafletAdapterData> icluster.data,
-				marker = idata._leafletMarker;
+			var idata = <PruneCluster.ILeafletAdapterData> icluster.data;
+			marker = idata._leafletMarker;
 
 			// We do not recycle markers already in use
 			if (idata._leafletMarker._removeFromMap) {
@@ -436,6 +441,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 								// Register the new marker
 								jdata._leafletMarker = marker;
+								marker._removeFromMap = false;
 								newObjectsOnMap.push(jcluster);
 
 								// Remove it from the sweep and prune working list
@@ -451,12 +457,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 				// If sadly the leaflet marker can't be recycled
 				if (remove) {
-					if (!this._hardMove) {
-						// Start a fading out transition
-						idata._leafletMarker.setOpacity(0);
-					}
-					// The marker will be removed later
-					toRemove.push(idata._leafletMarker);
+					if (!marker._removeFromMap) console.error("wtf");
 				}
 			}
 		}
@@ -500,21 +501,39 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			}
 		}, 1);
 
-		// Seventh step : Remove the leaflet objects
-		if (toRemove.length > 0) {
-			// Immediate remove
-			if (this._hardMove) {
-				for (i = 0, l = toRemove.length; i < l; ++i) {
-					map.removeLayer(toRemove[i]);
+		// Remove the remaining unused markers
+		if (this._hardMove) {
+			for (i = 0, l = markersOnMap.length; i < l; ++i) {
+				marker = markersOnMap[i];
+				if (marker._removeFromMap) {
+					map.removeLayer(marker);
 				}
-			} else {
-				// Remove after the fading out transition
-				window.setTimeout(() => {
+			}
+		} else {
+			if (this._removeTimeoutId !== 0) {
+				window.clearTimeout(this._removeTimeoutId);
+				for (i = 0, l = this._markersRemoveListTimeout.length; i < l; ++i) {
+					map.removeLayer(this._markersRemoveListTimeout[i]);
+				}
+			}
+
+			var toRemove = [];
+			for (i = 0, l = markersOnMap.length; i < l; ++i) {
+				marker = markersOnMap[i];
+				if (marker._removeFromMap) {
+					marker.setOpacity(0);
+					toRemove.push(marker);
+				}
+			}
+			if (toRemove.length > 0) {
+				this._removeTimeoutId = window.setTimeout(() => {
 					for (i = 0, l = toRemove.length; i < l; ++i) {
 						map.removeLayer(toRemove[i]);
 					}
+					this._removeTimeoutId = 0;
 				}, 300);
 			}
+			this._markersRemoveListTimeout = toRemove;
 		}
 
 		this._objectsOnMap = newObjectsOnMap;
