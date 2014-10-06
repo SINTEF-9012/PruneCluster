@@ -105,7 +105,7 @@ var PruneCluster;
             }
 
             var h = this.hashCode;
-            h = h * 31 + marker.hashCode;
+            h = ((h << 5) - h) + marker.hashCode;
             if (h >= maxHashCodeValue) {
                 this.hashCode = h % maxHashCodeValue;
             } else {
@@ -468,6 +468,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
 
         this._hardMove = false;
         this._resetIcons = false;
+
+        this._removeTimeoutId = 0;
+        this._markersRemoveListTimeout = [];
     },
     RegisterMarker: function (marker) {
         this.Cluster.RegisterMarker(marker);
@@ -604,10 +607,12 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
             maxLng: northEast.lng
         });
 
-        var objectsOnMap = this._objectsOnMap, newObjectsOnMap = [];
+        var objectsOnMap = this._objectsOnMap, newObjectsOnMap = [], markersOnMap = new Array(objectsOnMap.length);
 
         for (var i = 0, l = objectsOnMap.length; i < l; ++i) {
-            objectsOnMap[i].data._leafletMarker._removeFromMap = true;
+            var marker = objectsOnMap[i].data._leafletMarker;
+            markersOnMap[i] = marker;
+            marker._removeFromMap = true;
         }
 
         var clusterCreationList = [];
@@ -700,10 +705,10 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
             }
         });
 
-        var toRemove = [];
         for (i = 0, l = objectsOnMap.length; i < l; ++i) {
             icluster = objectsOnMap[i];
-            var idata = icluster.data, marker = idata._leafletMarker;
+            var idata = icluster.data;
+            marker = idata._leafletMarker;
 
             if (idata._leafletMarker._removeFromMap) {
                 var remove = true;
@@ -750,6 +755,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
 
                             if (!remove) {
                                 jdata._leafletMarker = marker;
+                                marker._removeFromMap = false;
                                 newObjectsOnMap.push(jcluster);
 
                                 clusterCreationList.splice(j, 1);
@@ -763,11 +769,8 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                 }
 
                 if (remove) {
-                    if (!this._hardMove) {
-                        idata._leafletMarker.setOpacity(0);
-                    }
-
-                    toRemove.push(idata._leafletMarker);
+                    if (!marker._removeFromMap)
+                        console.error("wtf");
                 }
             }
         }
@@ -808,18 +811,38 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
             }
         }, 1);
 
-        if (toRemove.length > 0) {
-            if (this._hardMove) {
-                for (i = 0, l = toRemove.length; i < l; ++i) {
-                    map.removeLayer(toRemove[i]);
+        if (this._hardMove) {
+            for (i = 0, l = markersOnMap.length; i < l; ++i) {
+                marker = markersOnMap[i];
+                if (marker._removeFromMap) {
+                    map.removeLayer(marker);
                 }
-            } else {
-                window.setTimeout(function () {
+            }
+        } else {
+            if (this._removeTimeoutId !== 0) {
+                window.clearTimeout(this._removeTimeoutId);
+                for (i = 0, l = this._markersRemoveListTimeout.length; i < l; ++i) {
+                    map.removeLayer(this._markersRemoveListTimeout[i]);
+                }
+            }
+
+            var toRemove = [];
+            for (i = 0, l = markersOnMap.length; i < l; ++i) {
+                marker = markersOnMap[i];
+                if (marker._removeFromMap) {
+                    marker.setOpacity(0);
+                    toRemove.push(marker);
+                }
+            }
+            if (toRemove.length > 0) {
+                this._removeTimeoutId = window.setTimeout(function () {
                     for (i = 0, l = toRemove.length; i < l; ++i) {
                         map.removeLayer(toRemove[i]);
                     }
+                    _this._removeTimeoutId = 0;
                 }, 300);
             }
+            this._markersRemoveListTimeout = toRemove;
         }
 
         this._objectsOnMap = newObjectsOnMap;

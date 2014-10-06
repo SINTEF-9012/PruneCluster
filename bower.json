@@ -1,6 +1,6 @@
 {
   "name": "PruneCluster",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "devDependencies": {
     "DefinitelyTyped": "*",
     "leaflet-dist": "~0.7.2"
