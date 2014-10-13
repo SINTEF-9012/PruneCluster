@@ -6,7 +6,7 @@ PruneCluster is a fast and realtime marker clustering library.
 It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster).
 
  
-*The library is designed for large datasets or live situations.* The memory consumption is keeped low and the library is fast on mobile devices, thanks to a new algorithm inspired by collision detection in physical engines.
+*The library is designed for large datasets or live situations.* The memory consumption is kept low and the library is fast on mobile devices, thanks to a new algorithm inspired by collision detection in physical engines.
 
 ![](http://medias.master-bridge.eu/resize/728/720/59dedba492400bfefddf3179fa83f18fbf4ee599.png)
 **Some tweets over the world**
@@ -27,14 +27,14 @@ Number of markers|First step|Update (low zoom level)|Update (high zoom level)
 [150 000](http://sintef-9012.github.io/PruneCluster/examples/random.150000.html)|220ms|60ms|20ms
 [1 000 000](http://sintef-9012.github.io/PruneCluster/examples/random.1000000.html)|1.9s|400ms|135ms
 
-This values are tested with random positions, on a recent laptop and Chrome 38. The half of markers is moving randomly and the other half is static. It is also fast enough for mobile devices.
+These values are tested with random positions, on a recent laptop, using Chrome 38. One half of markers is moving randomly and the other half is static. It is also fast enough for mobile devices.
 
 If you prefer real world data, the [50k Leaflet.markercluster example](http://sintef-9012.github.io/PruneCluster/examples/realworld.50000.html) is computed in 60ms *([original](http://sintef-9012.github.io/Leaflet.markercluster/example/marker-clustering-realworld.50000.html))*.
 
 #### Weight
 You can specify the weight of each marker.
 
-For example, you may want to add more importance to a marker representing an incident than a marker representing a tweet.
+For example, you may want to add more importance to a marker representing an incident, than a marker representing a tweet.
 
 #### Categories
 
@@ -44,10 +44,10 @@ You can specify a category for the markers. Then a small object representing the
 
 #### Dynamic cluster size
 
-The size of cluster can be adjusted on the fly *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
+The size of a cluster can be adjusted on the fly *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
 
 #### Filtering
-The markers can be filtered easely with no performance cost.
+The markers can be filtered easily with no performance cost.
 
 
 ### Usage
@@ -78,7 +78,7 @@ pruneCluster.RemoveMarkers([markerA,markerB,...]);
 ```
 
 #### Set the category
-The category can be a number or a string, but in order to minimize the performance cost, it is recommanded to use numbers between 0 and 7.
+The category can be a number or a string, but in order to minimize the performance cost, it is recommended to use numbers between 0 and 7.
 ```javascript
 marker.category = 5;
 ```
@@ -98,7 +98,7 @@ marker.filtered = true|false;
 pruneCluster.Cluster.Size = 87;
 ```
 
-#### Apply the changes
+#### Apply the changes (must be called when ANY changes are made)
 
 ```javascript
 pruneCluster.ProcessView();
@@ -122,7 +122,7 @@ marker.data.popup = 'Popup content';
 
 #### Faster leaflet icons
 
-If you have a lot of markers, you can create the icons and popups on the fly in order to improve the performances.
+If you have a lot of markers, you can create the icons and popups on the fly in order to improve their performance.
 
 ```javascript
 function createIcon(data, category) {
@@ -134,12 +134,15 @@ function createIcon(data, category) {
 marker.data.icon = createIcon;
 ```
 
-You can also override the PreapareLeafletMarker method.
+You can also override the PreapareLeafletMarker method. You can apply listeners to the markers here.
 
 ```javascript
 pruneCluster.PrepareLeafletMarker = function(leafletMarker, data) {
     leafletMarker.setIcon(/*... */); // See http://leafletjs.com/reference.html#icon
-    
+    //listeners can be applied to markers in this function
+    leafletMarker.on('click', function(){
+    //do click event logic here
+    });
     // A popup can already be attached to the marker
     // bindPopup can override it, but it's faster to update the content instead
     if (leafletMarker.getPopup()) {
