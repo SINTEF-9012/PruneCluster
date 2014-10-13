@@ -98,7 +98,9 @@ marker.filtered = true|false;
 pruneCluster.Cluster.Size = 87;
 ```
 
-#### Apply the changes (must be called when ANY changes are made)
+#### Apply the changes
+
+**Must be called when ANY changes are made.**
 
 ```javascript
 pruneCluster.ProcessView();

@@ -494,7 +494,13 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                 var zoomLevelBefore = _this._map.getZoom(), zoomLevelAfter = _this._map.getBoundsZoom(bounds, false, new L.Point(20, 20));
 
                 if (zoomLevelAfter === zoomLevelBefore) {
-                    _this._map.fire('overlappingmarkers', { markers: markersArea, center: m.getLatLng(), marker: m });
+                    _this._map.fire('overlappingmarkers', {
+                        cluster: _this,
+                        markers: markersArea,
+                        center: m.getLatLng(),
+                        marker: m
+                    });
+
                     _this._map.setView(position, zoomLevelAfter);
                 } else {
                     _this._map.fitBounds(bounds);
@@ -892,6 +898,10 @@ var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({
     },
     Spiderfy: function (data) {
         var _this = this;
+        if (data.cluster !== this._cluster) {
+            return;
+        }
+
         this.Unspiderfy();
         var markers = data.markers.filter(function (marker) {
             return !marker.filtered;
