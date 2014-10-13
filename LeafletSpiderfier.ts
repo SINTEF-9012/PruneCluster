@@ -36,7 +36,12 @@ var PruneClusterLeafletSpiderfier = ((<any>L).Layer ? (<any>L).Layer : L.Class).
 		this._map.on('zoomend', this.Unspiderfy, this);
 	},
 
-	Spiderfy: function(data) {
+	Spiderfy: function (data) {
+		// Ignore events from other PruneCluster instances
+		if (data.cluster !== this._cluster) {
+			return;
+		}
+
 		this.Unspiderfy();
 		var markers = data.markers.filter(function(marker) {
 			return !marker.filtered;

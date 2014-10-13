@@ -95,7 +95,13 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 				// If the zoom level doesn't change
 				if (zoomLevelAfter === zoomLevelBefore) {
 					// Send an event for the LeafletSpiderfier
-					this._map.fire('overlappingmarkers', { markers: markersArea, center: m.getLatLng(), marker: m });
+					this._map.fire('overlappingmarkers', {
+						cluster: this,
+						markers: markersArea,
+						center: m.getLatLng(),
+						marker: m
+					});
+
 					this._map.setView(position, zoomLevelAfter);
 				} else {
 					this._map.fitBounds(bounds);
