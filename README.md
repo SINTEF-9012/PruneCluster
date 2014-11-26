@@ -62,6 +62,12 @@ pruneCluster.RegisterMarker(marker);
 leafletMap.addLayer(pruneCluster);
 ```
 
+### PruneClusterForLeaflet constructor
+PruneClusterForLeaflet([size](#set-the-clustering-size), margin)
+
+You can specify the size and margin which affect when your clusters and markers will be merged.
+
+size defaults to 120 and margin to 20.
 
 #### Update a position
 ```javascript
@@ -94,6 +100,7 @@ marker.filtered = true|false;
 ```
 
 #### Set the clustering size
+You can specify a number indicating the area of the cluster. Higher number means more markers "merged". *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
 ```javascript
 pruneCluster.Cluster.Size = 87;
 ```
