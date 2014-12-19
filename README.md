@@ -178,6 +178,59 @@ pruneCluster.BuildLeafletClusterIcon = function(cluster) {
 };
 ```
 
+#### Listening to events on a cluster
+
+To listen to events on the cluster, you will need to override the ```BuildLeafletCluster``` method. A click event is already specified on m, but you can add other events like mouseover, mouseout, etc. Any events that a Leaflet marker supports, the cluster also supports, since it is just a modified marker. A full list of events can be found [here](http://leafletjs.com/reference.html#marker-click).
+
+Below is an example of how to implement mouseover and mousedown for the cluster, but any events can be used in place of those.
+```javascript
+pruneCluster.BuildLeafletCluster = function(cluster, position) {
+      var m = new L.Marker(position, {
+        icon: pruneCluster.BuildLeafletClusterIcon(cluster)
+      });
+
+      m.on('click', function() {
+        // Compute the  cluster bounds (it's slow : O(n))
+        var markersArea = pruneCluster.Cluster.FindMarkersInArea(cluster.bounds);
+        var b = pruneCluster.Cluster.ComputeBounds(markersArea);
+
+        if (b) {
+          var bounds = new L.LatLngBounds(
+            new L.LatLng(b.minLat, b.maxLng),
+            new L.LatLng(b.maxLat, b.minLng));
+
+          var zoomLevelBefore = pruneCluster._map.getZoom();
+          var zoomLevelAfter = pruneCluster._map.getBoundsZoom(bounds, false, new L.Point(20, 20, null));
+
+          // If the zoom level doesn't change
+          if (zoomLevelAfter === zoomLevelBefore) {
+            // Send an event for the LeafletSpiderfier
+            pruneCluster._map.fire('overlappingmarkers', {
+              cluster: pruneCluster,
+              markers: markersArea,
+              center: m.getLatLng(),
+              marker: m
+            });
+
+            pruneCluster._map.setView(position, zoomLevelAfter);
+          }
+          else {
+            pruneCluster._map.fitBounds(bounds);
+          }
+        }
+      });
+      m.on('mouseover', function() {
+        //do mouseover stuff here
+      });
+      m.on('mouseout', function() {
+        //do mouseout stuff here
+      });
+
+      return m;
+    };
+};
+```
+
 #### Redraw the icons
 
 Marker icon redrawing with a flag:
