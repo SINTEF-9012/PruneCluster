@@ -2,3 +2,5 @@ bower_components/
 node_modules/
 .tscache/
 PruneCluster.min.js.map
+.project
+.settings/
