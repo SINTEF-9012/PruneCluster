@@ -486,7 +486,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 			// Fading in transition
 			// (disabled by default with no-anim)
-			if(creationMarker._icon) L.DomUtil.addClass(creationMarker._icon, "no-anim");
+			// if(creationMarker._icon) L.DomUtil.addClass(creationMarker._icon, "no-anim");
 			creationMarker.setOpacity(0);
 			opacityUpdateList.push(creationMarker);
 
@@ -502,7 +502,8 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		window.setTimeout(() => {
 			for (i = 0, l = opacityUpdateList.length; i < l; ++i) {
 				var m = opacityUpdateList[i];
-				if(m._icon) L.DomUtil.removeClass(m._icon, "no-anim");
+				if(m._icon) L.DomUtil.addClass(m._icon, "prunecluster-anim");
+				if(m._shadow) L.DomUtil.addClass(m._shadow, "prunecluster-anim");
 				m.setOpacity(1);
 			}
 		}, 1);
