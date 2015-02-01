@@ -254,4 +254,4 @@ This library is developed in context of the [BRIDGE](http://www.bridgeproject.eu
 
 ### Licence
 
-The source code of this library is licenced under the MIT License.
+The source code of this library is licensed under the MIT License.
