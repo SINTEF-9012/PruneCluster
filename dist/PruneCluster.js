@@ -29,15 +29,15 @@ var PruneCluster;
             if (filtered === void 0) { filtered = false; }
             _super.call(this);
             this.data = data;
-            this.position = { lat: lat, lng: lng };
+            this.position = { lat: +lat, lng: +lng };
             this.weight = weight;
             this.category = category;
             this.filtered = filtered;
             this.hashCode = hashCodeCounter++;
         }
         Marker.prototype.Move = function (lat, lng) {
-            this.position.lat = lat;
-            this.position.lng = lng;
+            this.position.lat = +lat;
+            this.position.lng = +lng;
         };
         Marker.prototype.SetData = function (data) {
             for (var key in data) {
