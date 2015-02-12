@@ -61,7 +61,7 @@ module PruneCluster {
 			category?: number, weight: number = 1, filtered: boolean = false) {
 			super();
 			this.data = data;
-			this.position = { lat: lat, lng: lng };
+			this.position = { lat: +lat, lng: +lng };
 			this.weight = weight;
 			this.category = category;
 			this.filtered = filtered;
@@ -71,8 +71,8 @@ module PruneCluster {
 		}
 
 		public Move(lat: number, lng: number) {
-			this.position.lat = lat;
-			this.position.lng = lng;
+			this.position.lat = +lat;
+			this.position.lng = +lng;
 		}
 
 		// Apply the data object
