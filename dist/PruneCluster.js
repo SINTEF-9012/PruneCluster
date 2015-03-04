@@ -186,6 +186,12 @@ var PruneCluster;
             this._markers.push(marker);
             this._nbChanges += 1;
         };
+        PruneCluster.prototype.RegisterMarkers = function (markers) {
+            var _this = this;
+            markers.forEach(function (marker) {
+                _this.RegisterMarker(marker);
+            });
+        };
         PruneCluster.prototype._sortMarkers = function () {
             var markers = this._markers, length = markers.length;
             if (this._nbChanges && (!length || this._nbChanges / length > ratioForNativeSort)) {
@@ -368,6 +374,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
     },
     RegisterMarker: function (marker) {
         this.Cluster.RegisterMarker(marker);
+    },
+    RegisterMarkers: function (markers) {
+        this.Cluster.RegisterMarkers(markers);
     },
     RemoveMarkers: function (markers) {
         this.Cluster.RemoveMarkers(markers);
