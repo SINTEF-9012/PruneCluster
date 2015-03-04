@@ -8,6 +8,7 @@ module PruneCluster {
 		onRemove: (map: L.Map) => void;
 
 		RegisterMarker: (marker: Marker) => void;
+        RegisterMarkers: (markers: Marker[]) => void;
 		RemoveMarkers: (markers: Marker[]) => void;
 		ProcessView: () => void;
 		FitBounds: () => void;
@@ -68,6 +69,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 	RegisterMarker: function(marker: PruneCluster.Marker) {
 		this.Cluster.RegisterMarker(marker);
 	},
+
+    RegisterMarkers: function(markers: PruneCluster.Marker[]) {
+        this.Cluster.RegisterMarkers(markers);
+    },
 
 	RemoveMarkers: function(markers: PruneCluster.Marker[]) {
 		this.Cluster.RemoveMarkers(markers);
