@@ -51,6 +51,15 @@ The markers can be filtered easily with no performance cost.
 
 
 ### Usage
+```html
+	<!-- In <head> -->
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+
+	<!-- In <head> or before </body> -->
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script src="PruneCluster/dist/PruneCluster.js"></script>
+```
+
 ```javascript
 var pruneCluster = new PruneClusterForLeaflet();
 
