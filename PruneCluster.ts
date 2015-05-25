@@ -2,7 +2,7 @@ module PruneCluster {
 
 	// Use a quicksort algorithm instead of the insertion sort
 	// algorithm when the number of changes in the cluster
-	// exceed this ratio 
+	// exceed this ratio
 	var ratioForNativeSort = 0.2;
 
 	// The position is the real position of the object
@@ -61,7 +61,7 @@ module PruneCluster {
 			category?: number, weight: number = 1, filtered: boolean = false) {
 			super();
 			this.data = data;
-			this.position = { lat: lat, lng: lng };
+			this.position = { lat: +lat, lng: +lng };
 			this.weight = weight;
 			this.category = category;
 			this.filtered = filtered;
@@ -71,8 +71,8 @@ module PruneCluster {
 		}
 
 		public Move(lat: number, lng: number) {
-			this.position.lat = lat;
-			this.position.lng = lng;
+			this.position.lat = +lat;
+			this.position.lng = +lng;
 		}
 
 		// Apply the data object
@@ -262,7 +262,7 @@ module PruneCluster {
 			this.population += newCluster.population;
 			this.totalWeight = newWeight;
 
-			// Merge the bounds 
+			// Merge the bounds
 			this.bounds.minLat = Math.min(this.bounds.minLat, newCluster.bounds.minLat);
 			this.bounds.minLng = Math.min(this.bounds.minLng, newCluster.bounds.minLng);
 			this.bounds.maxLat = Math.max(this.bounds.maxLat, newCluster.bounds.maxLat);
@@ -332,6 +332,11 @@ module PruneCluster {
 			this._nbChanges += 1;
 		}
 
+        public RegisterMarkers(markers: Marker[]) {
+            markers.forEach((marker: Marker) => {
+                this.RegisterMarker(marker);
+            });
+        }
 
 		private _sortMarkers() {
 			var markers = this._markers,

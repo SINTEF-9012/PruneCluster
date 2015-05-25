@@ -29,15 +29,15 @@ var PruneCluster;
             if (filtered === void 0) { filtered = false; }
             _super.call(this);
             this.data = data;
-            this.position = { lat: lat, lng: lng };
+            this.position = { lat: +lat, lng: +lng };
             this.weight = weight;
             this.category = category;
             this.filtered = filtered;
             this.hashCode = hashCodeCounter++;
         }
         Marker.prototype.Move = function (lat, lng) {
-            this.position.lat = lat;
-            this.position.lng = lng;
+            this.position.lat = +lat;
+            this.position.lng = +lng;
         };
         Marker.prototype.SetData = function (data) {
             for (var key in data) {
@@ -185,6 +185,12 @@ var PruneCluster;
             }
             this._markers.push(marker);
             this._nbChanges += 1;
+        };
+        PruneCluster.prototype.RegisterMarkers = function (markers) {
+            var _this = this;
+            markers.forEach(function (marker) {
+                _this.RegisterMarker(marker);
+            });
         };
         PruneCluster.prototype._sortMarkers = function () {
             var markers = this._markers, length = markers.length;
@@ -368,6 +374,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
     },
     RegisterMarker: function (marker) {
         this.Cluster.RegisterMarker(marker);
+    },
+    RegisterMarkers: function (markers) {
+        this.Cluster.RegisterMarkers(markers);
     },
     RemoveMarkers: function (markers) {
         this.Cluster.RemoveMarkers(markers);

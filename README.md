@@ -51,6 +51,15 @@ The markers can be filtered easily with no performance cost.
 
 
 ### Usage
+```html
+	<!-- In <head> -->
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+
+	<!-- In <head> or before </body> -->
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script src="PruneCluster/dist/PruneCluster.js"></script>
+```
+
 ```javascript
 var pruneCluster = new PruneClusterForLeaflet();
 
@@ -254,4 +263,4 @@ This library is developed in context of the [BRIDGE](http://www.bridgeproject.eu
 
 ### Licence
 
-The source code of this library is licenced under the MIT License.
+The source code of this library is licensed under the MIT License.
