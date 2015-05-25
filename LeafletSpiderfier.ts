@@ -122,7 +122,9 @@ var PruneClusterLeafletSpiderfier = ((<any>L).Layer ? (<any>L).Layer : L.Class).
 		this._lines.setLatLngs(polylines);
 		this._map.addLayer(this._lines);
 
-		this._clusterMarker = data.marker.setOpacity(0.3);
+		if (data.marker) {
+			this._clusterMarker = data.marker.setOpacity(0.3);
+		}
 	},
 
 	_generatePointsCircle: function(count: number, centerPt: L.Point): L.Point[] {
