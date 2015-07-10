@@ -179,7 +179,7 @@ pruneCluster.BuildLeafletClusterIcon = function(cluster) {
 
     // If you want list of markers inside the cluster
     // (you must enable the option using PruneCluster.Cluster.ENABLE_MARKERS_LIST = true)
-    var markers = cluster.getClusterMarkers() 
+    var markers = cluster.GetClusterMarkers() 
         
     ...
     
