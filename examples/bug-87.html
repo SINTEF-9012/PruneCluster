@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Realworld 50k</title>
+
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi" />
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+    <link rel="stylesheet" href="examples.css"/>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView(new L.LatLng(59.911111, 10.752778), 17);
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    var leafletView = new PruneClusterForLeaflet(70);
+
+    var markers = [], size = 2;
+    for (var i = 0; i < size;++i) {
+        // var j = i + 0;
+        var j = i + 13;
+        var m = new PruneCluster.Marker(59.91111+j*0.00005,10.752778+j*0.00005);
+        console.log(m.position.lat, m.position.lng);
+        markers.push(m);
+        leafletView.RegisterMarker(m);
+    }
+
+    window.setTimeout(function () {
+        for (var i = 0; i < size;++i) {
+            markers[i].position.lng += 0.0001;
+        console.log(markers[i].position.lat, markers[i].position.lng);
+        }
+        leafletView.ProcessView();
+    }, 5000);
+
+    map.addLayer(leafletView);
+</script>
+</body>
+</html>

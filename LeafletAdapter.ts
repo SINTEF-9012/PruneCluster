@@ -83,9 +83,12 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			icon: this.BuildLeafletClusterIcon(cluster)
 		});
 
-		m.on('click', () => {
+		(<any>m)._leafletCluster = cluster;
+
+		m.on('click',() => {
+			var cbounds = (<any>m)._leafletCluster.bounds;
 			// Compute the  cluster bounds (it's slow : O(n))
-			var markersArea = this.Cluster.FindMarkersInArea(cluster.bounds);
+			var markersArea = this.Cluster.FindMarkersInArea(cbounds);
 			var b = this.Cluster.ComputeBounds(markersArea);
 
 			if (b) {
@@ -107,7 +110,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 						marker: m
 					});
 
-					this._map.setView(position, zoomLevelAfter);
+					this._map.setView(m.getLatLng(), zoomLevelAfter);
 				} else {
 					this._map.fitBounds(bounds);
 				}
@@ -440,6 +443,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 								// Update everything
 								marker.setLatLng(jdata._leafletPosition);
 								marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
+								(<any>marker)._leafletCluster = jcluster;
 								jdata._leafletOldPopulation = jcluster.population;
 								jdata._leafletOldHashCode = jcluster.hashCode;
 								marker._population = jcluster.population;

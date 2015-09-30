@@ -404,8 +404,10 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         var m = new L.Marker(position, {
             icon: this.BuildLeafletClusterIcon(cluster)
         });
+        m._leafletCluster = cluster;
         m.on('click', function () {
-            var markersArea = _this.Cluster.FindMarkersInArea(cluster.bounds);
+            var cbounds = m._leafletCluster.bounds;
+            var markersArea = _this.Cluster.FindMarkersInArea(cbounds);
             var b = _this.Cluster.ComputeBounds(markersArea);
             if (b) {
                 var bounds = new L.LatLngBounds(new L.LatLng(b.minLat, b.maxLng), new L.LatLng(b.maxLat, b.minLng));
@@ -417,7 +419,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                         center: m.getLatLng(),
                         marker: m
                     });
-                    _this._map.setView(position, zoomLevelAfter);
+                    _this._map.setView(m.getLatLng(), zoomLevelAfter);
                 }
                 else {
                     _this._map.fitBounds(bounds);
@@ -637,6 +639,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                             else if (marker._population > 1 && jcluster.population > 1) {
                                 marker.setLatLng(jdata._leafletPosition);
                                 marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
+                                marker._leafletCluster = jcluster;
                                 jdata._leafletOldPopulation = jcluster.population;
                                 jdata._leafletOldHashCode = jcluster.hashCode;
                                 marker._population = jcluster.population;
