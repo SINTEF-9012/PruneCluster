@@ -404,15 +404,49 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         var m = new L.Marker(position, {
             icon: this.BuildLeafletClusterIcon(cluster)
         });
-        m._leafletCluster = cluster;
+        m._leafletClusterBounds = cluster.bounds;
         m.on('click', function () {
-            var cbounds = m._leafletCluster.bounds;
+            var cbounds = m._leafletClusterBounds;
             var markersArea = _this.Cluster.FindMarkersInArea(cbounds);
             var b = _this.Cluster.ComputeBounds(markersArea);
             if (b) {
                 var bounds = new L.LatLngBounds(new L.LatLng(b.minLat, b.maxLng), new L.LatLng(b.maxLat, b.minLng));
                 var zoomLevelBefore = _this._map.getZoom(), zoomLevelAfter = _this._map.getBoundsZoom(bounds, false, new L.Point(20, 20));
                 if (zoomLevelAfter === zoomLevelBefore) {
+                    var filteredBounds = [];
+                    for (var i = 0, l = _this._objectsOnMap.length; i < l; ++i) {
+                        var o = _this._objectsOnMap[i];
+                        if (o.data._leafletMarker !== m) {
+                            if (o.bounds.minLat >= cbounds.minLat &&
+                                o.bounds.maxLat <= cbounds.maxLat &&
+                                o.bounds.minLng >= cbounds.minLng &&
+                                o.bounds.maxLng <= cbounds.maxLng) {
+                                filteredBounds.push(o.bounds);
+                            }
+                        }
+                    }
+                    if (filteredBounds.length > 0) {
+                        var newMarkersArea = [];
+                        var ll = filteredBounds.length;
+                        for (i = 0, l = markersArea.length; i < l; ++i) {
+                            var markerPos = markersArea[i].position;
+                            var isFiltered = false;
+                            for (var j = 0; j < ll; ++j) {
+                                var currentFilteredBounds = filteredBounds[j];
+                                if (markerPos.lat >= currentFilteredBounds.minLat &&
+                                    markerPos.lat <= currentFilteredBounds.maxLat &&
+                                    markerPos.lng >= currentFilteredBounds.minLng &&
+                                    markerPos.lng <= currentFilteredBounds.maxLng) {
+                                    isFiltered = true;
+                                    break;
+                                }
+                            }
+                            if (!isFiltered) {
+                                newMarkersArea.push(markersArea[i]);
+                            }
+                        }
+                        markersArea = newMarkersArea;
+                    }
                     _this._map.fire('overlappingmarkers', {
                         cluster: _this,
                         markers: markersArea,
@@ -581,6 +615,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                     oldMarker.setLatLng(position);
                     if (resetIcons || cluster.population != data._leafletOldPopulation ||
                         cluster.hashCode !== data._leafletOldHashCode) {
+                        var poisson = {};
+                        L.Util.extend(poisson, cluster.bounds);
+                        oldMarker._leafletClusterBounds = poisson;
                         oldMarker.setIcon(_this.BuildLeafletClusterIcon(cluster));
                     }
                     data._leafletOldPopulation = cluster.population;
@@ -639,7 +676,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                             else if (marker._population > 1 && jcluster.population > 1) {
                                 marker.setLatLng(jdata._leafletPosition);
                                 marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
-                                marker._leafletCluster = jcluster;
+                                var poisson = {};
+                                L.Util.extend(poisson, jcluster.bounds);
+                                marker._leafletClusterBounds = poisson;
                                 jdata._leafletOldPopulation = jcluster.population;
                                 jdata._leafletOldHashCode = jcluster.hashCode;
                                 marker._population = jcluster.population;
