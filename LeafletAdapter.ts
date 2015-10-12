@@ -83,9 +83,14 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			icon: this.BuildLeafletClusterIcon(cluster)
 		});
 
-		m.on('click', () => {
+		(<any>m)._leafletClusterBounds = cluster.bounds;
+
+		m.on('click',() => {
+			var cbounds = <PruneCluster.Bounds>(<any>m)._leafletClusterBounds;
+
 			// Compute the  cluster bounds (it's slow : O(n))
-			var markersArea = this.Cluster.FindMarkersInArea(cluster.bounds);
+			var markersArea: PruneCluster.Marker[] = this.Cluster.FindMarkersInArea(cbounds);
+
 			var b = this.Cluster.ComputeBounds(markersArea);
 
 			if (b) {
@@ -99,6 +104,48 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 				// If the zoom level doesn't change
 				if (zoomLevelAfter === zoomLevelBefore) {
+
+					// We need to filter the markers because the may be contained 
+					// by other clusters on the map (in case of a cluster merge) 
+					var filteredBounds: PruneCluster.Bounds[] = [];
+
+					// The first step is identifying the clusters in the map that are inside the bounds
+					for (var i = 0, l = this._objectsOnMap.length; i < l; ++i) {
+						var o = <PruneCluster.Cluster> this._objectsOnMap[i];
+
+						if (o.data._leafletMarker !== m) {
+							if (o.bounds.minLat >= cbounds.minLat &&
+								o.bounds.maxLat <= cbounds.maxLat &&
+								o.bounds.minLng >= cbounds.minLng &&
+								o.bounds.maxLng <= cbounds.maxLng) {
+								filteredBounds.push(o.bounds);
+							}
+						}
+					}
+
+					// Filter the markers
+					if (filteredBounds.length > 0) {
+						var newMarkersArea = [];
+						var ll = filteredBounds.length;
+						for (i = 0, l = markersArea.length; i < l; ++i) {
+							var markerPos = markersArea[i].position;
+							var isFiltered = false;
+							for (var j = 0; j < ll; ++j) {
+								var currentFilteredBounds = filteredBounds[j];
+								if (markerPos.lat >= currentFilteredBounds.minLat &&
+									markerPos.lat <= currentFilteredBounds.maxLat &&
+									markerPos.lng >= currentFilteredBounds.minLng &&
+									markerPos.lng <= currentFilteredBounds.maxLng) {
+									isFiltered = true;
+									break;
+								}
+							}	
+							if (!isFiltered) {
+								newMarkersArea.push(markersArea[i]);
+							}
+						}
+						markersArea = newMarkersArea;
+					}
 
 					// TODO use an option registered somewhere
 					if (markersArea.length < 200) { 
@@ -115,7 +162,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 						zoomLevelAfter++;
 					}
 
-					this._map.setView(position, zoomLevelAfter);
+					this._map.setView(m.getLatLng(), zoomLevelAfter);
 				} else {
 					this._map.fitBounds(bounds);
 				}
@@ -349,6 +396,9 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					// Update the icon if the population of his content has changed or if we need to reset the icon
 					if (resetIcons || cluster.population != data._leafletOldPopulation ||
 						cluster.hashCode !== data._leafletOldHashCode) {
+						var poisson = {};
+						L.Util.extend(poisson, cluster.bounds);
+						(<any>oldMarker)._leafletClusterBounds = poisson;//cluster.bounds;
 						oldMarker.setIcon(this.BuildLeafletClusterIcon(cluster));
 					}
 
@@ -448,6 +498,9 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 								// Update everything
 								marker.setLatLng(jdata._leafletPosition);
 								marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
+								var poisson = {};
+								L.Util.extend(poisson, jcluster.bounds);
+								(<any>marker)._leafletClusterBounds = poisson;
 								jdata._leafletOldPopulation = jcluster.population;
 								jdata._leafletOldHashCode = jcluster.hashCode;
 								marker._population = jcluster.population;
