@@ -1,9 +1,14 @@
 module PruneCluster {
 
 	// Use a quicksort algorithm instead of the insertion sort
-	// algorithm when the number of changes in the cluster
-	// exceed this ratio
-	var ratioForNativeSort = 0.2;
+	// algorithm when there are many changes
+	function shouldUseNativeSort(total: number, nbChanges: number): boolean {
+		if (nbChanges > 300) {
+			return true;
+		} else {
+			return (nbChanges / total) > 0.2;
+		}
+	}
 
 	// The position is the real position of the object
 	// using a standard coordinate system, as WGS 84
@@ -342,12 +347,13 @@ module PruneCluster {
 			var markers = this._markers,
 				length = markers.length;
 
-			if (this._nbChanges && (!length || this._nbChanges / length > ratioForNativeSort)) {
-				// Native sort
-				this._markers.sort((a: Marker, b: Marker) => a.position.lng - b.position.lng);
-			} else {
-				// Insertion sort (faster for sorted or almost sorted arrays)
-				insertionSort(markers);
+			if (this._nbChanges) {
+				if (shouldUseNativeSort(length, this._nbChanges)) {
+					// native (n log n) sort
+					this._markers.sort((a: Marker, b: Marker) => a.position.lng - b.position.lng);
+				} else {
+					insertionSort(markers);  // faster for almost-sorted arrays
+				}
 			}
 
 			// Now the list is sorted, we can reset the counter
