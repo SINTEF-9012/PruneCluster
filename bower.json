@@ -1,8 +1,22 @@
 {
   "name": "PruneCluster",
-  "version": "0.10.1",
   "devDependencies": {
     "DefinitelyTyped": "*",
     "leaflet-dist": "~0.7.2"
+  },
+  "ignore": [
+    "*.ts",
+    "*.md",
+    "package.json",
+    "meteor",
+    "examples",
+    "Gruntfile.js",
+    "LICENSE",
+    "bower.json"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SINTEF-9012/PruneCluster.git"
   }
 }
