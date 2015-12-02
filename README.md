@@ -259,7 +259,7 @@ pruneCluster.RedrawIcons();
 
 ### Acknowledgements
 
-This library is developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project.
+This library was developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project. It is now supported by the community and we thank [the contributors](https://github.com/SINTEF-9012/PruneCluster/graphs/contributors).
 
 ### Licence
 
