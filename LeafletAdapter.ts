@@ -49,10 +49,10 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 		// Bind the Leaflet project and unproject methods to the cluster
 		this.Cluster.Project = (lat: number, lng: number) =>
-			this._map.project(new L.LatLng(lat, lng));
+			this._map.project(new L.LatLng(lat, lng), Math.floor(this._map.getZoom()));
 
 		this.Cluster.UnProject = (x: number, y: number) =>
-			this._map.unproject(new L.Point(x, y));
+			this._map.unproject(new L.Point(x, y), Math.floor(this._map.getZoom()));
 
 		this._objectsOnMap = [];
 
@@ -277,7 +277,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 
 		var map = this._map,
 			bounds = map.getBounds(),
-			zoom = map.getZoom(),
+			zoom = Math.floor(map.getZoom()),
 			marginRatio = this.clusterMargin / this.Cluster.Size,
 			resetIcons = this._resetIcons;
 
