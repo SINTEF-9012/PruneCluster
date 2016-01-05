@@ -16,4 +16,5 @@ div#size, a#delete {
 	color: black;
 	padding: 0.4em;
 	border-radius: 4px;
+	z-index: 500;
 }
