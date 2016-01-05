@@ -396,9 +396,9 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					// Update the icon if the population of his content has changed or if we need to reset the icon
 					if (resetIcons || cluster.population != data._leafletOldPopulation ||
 						cluster.hashCode !== data._leafletOldHashCode) {
-						var poisson = {};
-						L.Util.extend(poisson, cluster.bounds);
-						(<any>oldMarker)._leafletClusterBounds = poisson;//cluster.bounds;
+						var boundsCopy = {};
+						L.Util.extend(boundsCopy, cluster.bounds);
+						(<any>oldMarker)._leafletClusterBounds = boundsCopy;
 						oldMarker.setIcon(this.BuildLeafletClusterIcon(cluster));
 					}
 
