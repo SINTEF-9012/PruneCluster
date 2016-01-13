@@ -70,8 +70,7 @@ module.exports = function(grunt) {
 		'clean:ts',
 		'copy:css',
 		'ts:build',
-		'uglify',
-		'exec'
+		'uglify'
 	]);
 
 	grunt.registerTask('default', ['build']);
