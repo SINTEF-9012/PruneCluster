@@ -308,9 +308,9 @@ module PruneCluster {
 	// However the insertion sort's worst case is extreme and we should avoid it.
 	function shouldUseInsertionSort(total: number, nbChanges: number): boolean {
 		if (nbChanges > 300) {
-			return true;
+			return false;
 		} else {
-			return (nbChanges / total) > 0.2;
+			return (nbChanges / total) < 0.2;
 		}
 	}
 
