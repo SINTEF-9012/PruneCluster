@@ -347,13 +347,11 @@ module PruneCluster {
 			var markers = this._markers,
 				length = markers.length;
 
-			if (this._nbChanges) {
-				if (shouldUseNativeSort(length, this._nbChanges)) {
-					// native (n log n) sort
-					this._markers.sort((a: Marker, b: Marker) => a.position.lng - b.position.lng);
-				} else {
-					insertionSort(markers);  // faster for almost-sorted arrays
-				}
+			if (this._nbChanges && shouldUseNativeSort(length, this._nbChanges)) {
+				// native (n log n) sort
+				this._markers.sort((a: Marker, b: Marker) => a.position.lng - b.position.lng);
+			} else {
+				insertionSort(markers);  // faster for almost-sorted arrays
 			}
 
 			// Now the list is sorted, we can reset the counter
