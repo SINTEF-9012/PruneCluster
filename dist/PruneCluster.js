@@ -1,19 +1,10 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var PruneCluster;
 (function (PruneCluster_1) {
-    function shouldUseNativeSort(total, nbChanges) {
-        if (nbChanges > 300) {
-            return true;
-        }
-        else {
-            return (nbChanges / total) > 0.2;
-        }
-    }
     var Point = (function () {
         function Point() {
         }
@@ -187,6 +178,14 @@ var PruneCluster;
             list[j + 1] = tmp;
         }
     }
+    function shouldUseInsertionSort(total, nbChanges) {
+        if (nbChanges > 300) {
+            return true;
+        }
+        else {
+            return (nbChanges / total) > 0.2;
+        }
+    }
     var PruneCluster = (function () {
         function PruneCluster() {
             this._markers = [];
@@ -210,13 +209,11 @@ var PruneCluster;
         };
         PruneCluster.prototype._sortMarkers = function () {
             var markers = this._markers, length = markers.length;
-            if (this._nbChanges) {
-                if (shouldUseNativeSort(length, this._nbChanges)) {
-                    this._markers.sort(function (a, b) { return a.position.lng - b.position.lng; });
-                }
-                else {
-                    insertionSort(markers);
-                }
+            if (this._nbChanges && !shouldUseInsertionSort(length, this._nbChanges)) {
+                this._markers.sort(function (a, b) { return a.position.lng - b.position.lng; });
+            }
+            else {
+                insertionSort(markers);
             }
             this._nbChanges = 0;
         };
@@ -224,7 +221,6 @@ var PruneCluster;
             insertionSort(this._clusters);
         };
         PruneCluster.prototype._indexLowerBoundLng = function (lng) {
-            // Inspired by std::lower_bound
             var markers = this._markers, it, step, first = 0, count = markers.length;
             while (count > 0) {
                 step = Math.floor(count / 2);
@@ -374,7 +370,6 @@ var PruneCluster;
     })();
     PruneCluster_1.PruneCluster = PruneCluster;
 })(PruneCluster || (PruneCluster = {}));
-/// <reference path="bower_components/DefinitelyTyped/Leaflet/Leaflet.d.ts"/>
 var PruneCluster;
 (function (PruneCluster) {
 })(PruneCluster || (PruneCluster = {}));
@@ -800,7 +795,6 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         }
     }
 });
-/// <reference path="bower_components/DefinitelyTyped/Leaflet/Leaflet.d.ts"/>
 var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({
     _2PI: Math.PI * 2,
     _circleFootSeparation: 25,
