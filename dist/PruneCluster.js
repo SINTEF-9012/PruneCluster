@@ -180,10 +180,10 @@ var PruneCluster;
     }
     function shouldUseInsertionSort(total, nbChanges) {
         if (nbChanges > 300) {
-            return true;
+            return false;
         }
         else {
-            return (nbChanges / total) > 0.2;
+            return (nbChanges / total) < 0.2;
         }
     }
     var PruneCluster = (function () {
