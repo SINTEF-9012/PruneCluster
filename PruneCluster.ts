@@ -1,15 +1,5 @@
 module PruneCluster {
 
-	// Use a quicksort algorithm instead of the insertion sort
-	// algorithm when there are many changes
-	function shouldUseNativeSort(total: number, nbChanges: number): boolean {
-		if (nbChanges > 300) {
-			return true;
-		} else {
-			return (nbChanges / total) > 0.2;
-		}
-	}
-
 	// The position is the real position of the object
 	// using a standard coordinate system, as WGS 84
 	export interface Position {
@@ -311,6 +301,19 @@ module PruneCluster {
 		}
 	}
 
+	// PruneCluster must work on a sorted collection
+	// the insertion sort is preferred for its stability and its performances
+	// on sorted or almost sorted collections.
+	//
+	// However the insertion sort's worst case is extreme and we should avoid it.
+	function shouldUseInsertionSort(total: number, nbChanges: number): boolean {
+		if (nbChanges > 300) {
+			return true;
+		} else {
+			return (nbChanges / total) > 0.2;
+		}
+	}
+
 	export class PruneCluster {
 		private _markers: Marker[] = [];
 
@@ -347,13 +350,11 @@ module PruneCluster {
 			var markers = this._markers,
 				length = markers.length;
 
-			if (this._nbChanges) {
-				if (shouldUseNativeSort(length, this._nbChanges)) {
-					// native (n log n) sort
-					this._markers.sort((a: Marker, b: Marker) => a.position.lng - b.position.lng);
-				} else {
-					insertionSort(markers);  // faster for almost-sorted arrays
-				}
+			if (this._nbChanges && !shouldUseInsertionSort(length, this._nbChanges)) {
+				// native (n log n) sort
+				this._markers.sort((a: Marker, b: Marker) => a.position.lng - b.position.lng);
+			} else {
+				insertionSort(markers);  // faster for almost-sorted arrays
 			}
 
 			// Now the list is sorted, we can reset the counter
