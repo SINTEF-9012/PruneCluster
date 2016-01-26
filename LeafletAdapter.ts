@@ -457,44 +457,45 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					for (j = 0, ll = clusterCreationList.length; j < ll; ++j) {
 						var jcluster = clusterCreationList[j],
 							jdata = <PruneCluster.ILeafletAdapterData> jcluster.data;
-						var pb = jcluster.averagePosition;
 
-						var oldMinLng = pa.lng - lngMargin,
-							newMaxLng = pb.lng + lngMargin;
 
-						oldMaxLng = pa.lng + lngMargin;
-						oldMinLat = pa.lat - latMargin;
-						oldMaxLat = pa.lat + latMargin;
-						newMinLng = pb.lng - lngMargin;
-						newMinLat = pb.lat - latMargin;
-						newMaxLat = pb.lat + latMargin;
+						// If luckily it's the same single marker
+						if (marker._population === 1 && jcluster.population === 1 &&
+							marker._hashCode === jcluster.hashCode) {
 
-						// If a collapsing leaflet marker is found, it may be recycled
-						if (oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat) {
+							// I we need to reset the icon
+							if (resetIcons || jcluster.lastMarker.data.forceIconRedraw) {
+								this.PrepareLeafletMarker(
+									marker,
+									jcluster.lastMarker.data,
+									jcluster.lastMarker.category);
 
-							// If luckily it's the same single marker (it happens)
-							if (marker._population === 1 && jcluster.population === 1 &&
-								marker._hashCode === jcluster.hashCode) {
-
-								// I we need to reset the icon
-								if (resetIcons || jcluster.lastMarker.data.forceIconRedraw) {
-									this.PrepareLeafletMarker(
-										marker,
-										jcluster.lastMarker.data,
-										jcluster.lastMarker.category);
-
-									if (jcluster.lastMarker.data.forceIconRedraw) {
-										jcluster.lastMarker.data.forceIconRedraw = false;
-									}
+								if (jcluster.lastMarker.data.forceIconRedraw) {
+									jcluster.lastMarker.data.forceIconRedraw = false;
 								}
+							}
 
-								// Update the position
-								marker.setLatLng(jdata._leafletPosition);
-								remove = false;
+							// Update the position
+							marker.setLatLng(jdata._leafletPosition);
+							remove = false;
+
+						} else {
+							
+							var pb = jcluster.averagePosition;
+							var oldMinLng = pa.lng - lngMargin,
+								newMaxLng = pb.lng + lngMargin;
+
+							oldMaxLng = pa.lng + lngMargin;
+							oldMinLat = pa.lat - latMargin;
+							oldMaxLat = pa.lat + latMargin;
+							newMinLng = pb.lng - lngMargin;
+							newMinLat = pb.lat - latMargin;
+							newMaxLat = pb.lat + latMargin;
 
 							// If it's a cluster marker
-							} else if (marker._population > 1 && jcluster.population > 1) {
-
+							// and if a collapsing leaflet marker is found, it may be recycled
+							if ((marker._population > 1 && jcluster.population > 1) &&
+								(oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat)) {
 								// Update everything
 								marker.setLatLng(jdata._leafletPosition);
 								marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
@@ -504,25 +505,24 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 								jdata._leafletOldPopulation = jcluster.population;
 								jdata._leafletOldHashCode = jcluster.hashCode;
 								marker._population = jcluster.population;
-
 								remove = false;
 							}
+						}
 
-							// If the leaflet marker is recycled 
-							if (!remove) {
+						// If the leaflet marker is recycled 
+						if (!remove) {
 
-								// Register the new marker
-								jdata._leafletMarker = marker;
-								marker._removeFromMap = false;
-								newObjectsOnMap.push(jcluster);
+							// Register the new marker
+							jdata._leafletMarker = marker;
+							marker._removeFromMap = false;
+							newObjectsOnMap.push(jcluster);
 
-								// Remove it from the sweep and prune working list
-								clusterCreationList.splice(j, 1);
-								--j;
-								--ll;
+							// Remove it from the sweep and prune working list
+							clusterCreationList.splice(j, 1);
+							--j;
+							--ll;
 
-								break;
-							}
+							break;
 						}
 					}
 				}
