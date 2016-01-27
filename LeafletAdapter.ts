@@ -304,6 +304,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		}
 
 		var clusterCreationList: PruneCluster.Cluster[] = [];
+		var clusterCreationListPopOne: PruneCluster.Cluster[] = [];
 
 		var opacityUpdateList = [];
 
@@ -415,7 +416,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 				// Clusters with a single marker are placed at the beginning
 				// of the cluster creation list, to recycle them in priority
 				if (cluster.population === 1) {
-					clusterCreationList.unshift(cluster);
+					clusterCreationListPopOne.push(cluster);
 				} else {
 					clusterCreationList.push(cluster);
 				}
@@ -441,6 +442,8 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		// Fifth step : recycle leaflet markers using a sweep and prune algorithm
 		// The purpose of this step is to make smooth transition when a cluster or a marker
 		// is moving on the map and its grid cell changes
+		clusterCreationList = clusterCreationListPopOne.concat(clusterCreationList);
+
 		for (i = 0, l = objectsOnMap.length; i < l; ++i) {
 			icluster = objectsOnMap[i];
 			var idata = <PruneCluster.ILeafletAdapterData> icluster.data;

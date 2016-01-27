@@ -573,6 +573,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
             marker._removeFromMap = true;
         }
         var clusterCreationList = [];
+        var clusterCreationListPopOne = [];
         var opacityUpdateList = [];
         var workingList = [];
         for (i = 0, l = clusters.length; i < l; ++i) {
@@ -636,7 +637,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
             }
             if (!m) {
                 if (cluster.population === 1) {
-                    clusterCreationList.unshift(cluster);
+                    clusterCreationListPopOne.push(cluster);
                 }
                 else {
                     clusterCreationList.push(cluster);
@@ -655,6 +656,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                 data._leafletPosition = position;
             }
         });
+        clusterCreationList = clusterCreationListPopOne.concat(clusterCreationList);
         for (i = 0, l = objectsOnMap.length; i < l; ++i) {
             icluster = objectsOnMap[i];
             var idata = icluster.data;
