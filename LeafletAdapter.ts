@@ -412,7 +412,13 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			// If a leaflet marker is unfound,
 			// register it in the creation waiting list
 			if (!m) {
-				clusterCreationList.push(cluster);
+				// Clusters with a single marker are placed at the beginning
+				// of the cluster creation list, to recycle them in priority
+				if (cluster.population === 1) {
+					clusterCreationList.unshift(cluster);
+				} else {
+					clusterCreationList.push(cluster);
+				}
 
 				data._leafletPosition = position;
 				data._leafletOldPopulation = cluster.population;

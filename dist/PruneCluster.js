@@ -635,7 +635,12 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                 }
             }
             if (!m) {
-                clusterCreationList.push(cluster);
+                if (cluster.population === 1) {
+                    clusterCreationList.unshift(cluster);
+                }
+                else {
+                    clusterCreationList.push(cluster);
+                }
                 data._leafletPosition = position;
                 data._leafletOldPopulation = cluster.population;
                 data._leafletOldHashCode = cluster.hashCode;
