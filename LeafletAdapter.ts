@@ -304,6 +304,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		}
 
 		var clusterCreationList: PruneCluster.Cluster[] = [];
+		var clusterCreationListIndexesPopOne = new Map<number, number>();
 
 		var opacityUpdateList = [];
 
@@ -412,12 +413,12 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 			// If a leaflet marker is unfound,
 			// register it in the creation waiting list
 			if (!m) {
+				var indexCreationList = clusterCreationList.push(cluster) - 1; // length - 1
+
 				// Clusters with a single marker are placed at the beginning
 				// of the cluster creation list, to recycle them in priority
 				if (cluster.population === 1) {
-					clusterCreationList.unshift(cluster);
-				} else {
-					clusterCreationList.push(cluster);
+					clusterCreationListIndexesPopOne.set(cluster.hashCode, indexCreationList);
 				}
 
 				data._leafletPosition = position;
@@ -452,83 +453,97 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 				// If the sweep and prune algorithm doesn't find anything,
 				// the leaflet marker can't be recycled and it will be removed
 				var remove = true;
+				var jcluster: PruneCluster.Cluster;
 
 				// Recycle marker only with the same zoom level
 				if (marker._zoomLevel === zoom) {
 					var pa = icluster.averagePosition;
 
-					latMargin = (icluster.bounds.maxLat - icluster.bounds.minLat) * marginRatio,
-						lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
+					if (clusterCreationListIndexesPopOne.has(marker._hashCode)) {
+						j = clusterCreationListIndexesPopOne.get(marker._hashCode);
+						jcluster = clusterCreationList[j];
+						clusterCreationList.splice(j, 1);
 
-					for (j = 0, ll = clusterCreationList.length; j < ll; ++j) {
-						var jcluster = clusterCreationList[j],
-							jdata = <PruneCluster.ILeafletAdapterData> jcluster.data;
+						// If we need to reset the icon
+						if (resetIcons || jcluster.lastMarker.data.forceIconRedraw) {
+							this.PrepareLeafletMarker(
+								marker,
+								jcluster.lastMarker.data,
+								jcluster.lastMarker.category);
 
-
-						// If luckily it's the same single marker
-						if (marker._population === 1 && jcluster.population === 1 &&
-							marker._hashCode === jcluster.hashCode) {
-
-							// I we need to reset the icon
-							if (resetIcons || jcluster.lastMarker.data.forceIconRedraw) {
-								this.PrepareLeafletMarker(
-									marker,
-									jcluster.lastMarker.data,
-									jcluster.lastMarker.category);
-
-								if (jcluster.lastMarker.data.forceIconRedraw) {
-									jcluster.lastMarker.data.forceIconRedraw = false;
-								}
-							}
-
-							// Update the position
-							marker.setLatLng(jdata._leafletPosition);
-							remove = false;
-
-						} else {
-							
-							var pb = jcluster.averagePosition;
-							var oldMinLng = pa.lng - lngMargin,
-								newMaxLng = pb.lng + lngMargin;
-
-							oldMaxLng = pa.lng + lngMargin;
-							oldMinLat = pa.lat - latMargin;
-							oldMaxLat = pa.lat + latMargin;
-							newMinLng = pb.lng - lngMargin;
-							newMinLat = pb.lat - latMargin;
-							newMaxLat = pb.lat + latMargin;
-
-							// If it's a cluster marker
-							// and if a collapsing leaflet marker is found, it may be recycled
-							if ((marker._population > 1 && jcluster.population > 1) &&
-								(oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat)) {
-								// Update everything
-								marker.setLatLng(jdata._leafletPosition);
-								marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
-								var poisson = {};
-								L.Util.extend(poisson, jcluster.bounds);
-								(<any>marker)._leafletClusterBounds = poisson;
-								jdata._leafletOldPopulation = jcluster.population;
-								jdata._leafletOldHashCode = jcluster.hashCode;
-								marker._population = jcluster.population;
-								remove = false;
+							if (jcluster.lastMarker.data.forceIconRedraw) {
+								jcluster.lastMarker.data.forceIconRedraw = false;
 							}
 						}
 
-						// If the leaflet marker is recycled 
-						if (!remove) {
+						// Update the position
+						marker.setLatLng(jdata._leafletPosition);
+						remove = false;
 
-							// Register the new marker
-							jdata._leafletMarker = marker;
-							marker._removeFromMap = false;
-							newObjectsOnMap.push(jcluster);
+						// Register the new marker
+						jcluster.data._leafletMarker = marker;
+						marker._removeFromMap = false;
+						newObjectsOnMap.push(jcluster);
+					} else {
 
-							// Remove it from the sweep and prune working list
-							clusterCreationList.splice(j, 1);
-							--j;
-							--ll;
+						latMargin = (icluster.bounds.maxLat - icluster.bounds.minLat) * marginRatio,
+							lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
 
-							break;
+						for (j = 0, ll = clusterCreationList.length; j < ll; ++j) {
+							var jdata = <PruneCluster.ILeafletAdapterData> jcluster.data;
+
+							jcluster = clusterCreationList[j];
+
+							// If luckily it's the same single marker
+							if (marker._population === 1 && jcluster.population === 1 &&
+								marker._hashCode === jcluster.hashCode) {
+
+
+							} else {
+
+								var pb = jcluster.averagePosition;
+								var oldMinLng = pa.lng - lngMargin,
+									newMaxLng = pb.lng + lngMargin;
+
+								oldMaxLng = pa.lng + lngMargin;
+								oldMinLat = pa.lat - latMargin;
+								oldMaxLat = pa.lat + latMargin;
+								newMinLng = pb.lng - lngMargin;
+								newMinLat = pb.lat - latMargin;
+								newMaxLat = pb.lat + latMargin;
+
+								// If it's a cluster marker
+								// and if a collapsing leaflet marker is found, it may be recycled
+								if ((marker._population > 1 && jcluster.population > 1) &&
+								(oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat)) {
+									// Update everything
+									marker.setLatLng(jdata._leafletPosition);
+									marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
+									var poisson = {};
+									L.Util.extend(poisson, jcluster.bounds);
+									(<any>marker)._leafletClusterBounds = poisson;
+									jdata._leafletOldPopulation = jcluster.population;
+									jdata._leafletOldHashCode = jcluster.hashCode;
+									marker._population = jcluster.population;
+									remove = false;
+								}
+							}
+
+							// If the leaflet marker is recycled 
+							if (!remove) {
+
+								// Register the new marker
+								jdata._leafletMarker = marker;
+								marker._removeFromMap = false;
+								newObjectsOnMap.push(jcluster);
+
+								// Remove it from the sweep and prune working list
+								clusterCreationList.splice(j, 1);
+								--j;
+								--ll;
+
+								break;
+							}
 						}
 					}
 				}
