@@ -1,4 +1,4 @@
-/// <reference path="bower_components/DefinitelyTyped/Leaflet/Leaflet.d.ts"/>
+/// <reference path="typings/tsd.d.ts"/>
 
 // Based on https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet and
 // https://github.com/Leaflet/Leaflet.markercluster because it works very perfectly

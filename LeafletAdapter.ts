@@ -1,4 +1,4 @@
-/// <reference path="bower_components/DefinitelyTyped/Leaflet/Leaflet.d.ts"/>
+/// <reference path="typings/tsd.d.ts"/>
 
 module PruneCluster {
 	export declare class LeafletAdapter implements L.ILayer {
