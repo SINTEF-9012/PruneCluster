@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
@@ -12,16 +12,16 @@
 
     <script src="../dist/PruneCluster.js"></script>
 
-	<link rel="stylesheet" href="examples.css"/>
+    <link rel="stylesheet" href="examples.css"/>
 </head>
 <body>
 <div id="map"></div>
-
+<div href="#" id="size">Zoom: <input type="range" value="17.5" min="10" max="18" step="0.05" id="zoomInput"/></div>
 <script>
     var map = L.map("map", {
         attributionControl: false,
         zoomControl: false
-    }).setView(new L.LatLng(59.911111, 10.752778), 4);
+    }).setView(new L.LatLng(59.911111, 10.752778), 12.5);
 
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         detectRetina: true,
@@ -29,8 +29,9 @@
     }).addTo(map);
 
     var leafletView = new PruneClusterForLeaflet();
+        // leafletView.Cluster.Size = 10;
 
-    var size = 1000000;
+    var size = 10000;
     var markers = [];
     for (var i = 0; i < size; ++i) {
         var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * Math.random() * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * Math.random() * 0.00002 * size);
@@ -39,7 +40,13 @@
         leafletView.RegisterMarker(marker);
     }
 
+    var lastUpdate = 0;
     window.setInterval(function () {
+	    var now = +new Date();
+	    if ((now - lastUpdate) < 400) {
+	    	return;
+	    }
+
         for (i = 0; i < size / 2; ++i) {
             var coef = i < size / 8 ? 10 : 1;
             var ll = markers[i].position;
@@ -48,9 +55,25 @@
         }
 
         leafletView.ProcessView();
-    }, 3000);
+	    lastUpdate = now;
+    }, 500);
 
     map.addLayer(leafletView);
+
+	var updateFilter = function () {
+
+	    var now = +new Date();
+	    if ((now - lastUpdate) < 130) {
+	    	return;
+	    }
+        lastUpdate = now;
+
+        var ratio = parseFloat(this.value);
+        console.log(ratio)
+		map.setZoom(ratio);
+	};
+    document.getElementById('zoomInput').onchange = updateFilter; 
+    document.getElementById('zoomInput').oninput = updateFilter; 
 </script>
 </body>
 </html>

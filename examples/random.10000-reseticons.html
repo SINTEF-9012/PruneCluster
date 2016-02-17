@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
@@ -12,16 +12,16 @@
 
     <script src="../dist/PruneCluster.js"></script>
 
-	<link rel="stylesheet" href="examples.css"/>
+    <link rel="stylesheet" href="examples.css"/>
 </head>
 <body>
 <div id="map"></div>
-
+<a href="#" id="delete">Reset icons</a>
 <script>
     var map = L.map("map", {
         attributionControl: false,
         zoomControl: false
-    }).setView(new L.LatLng(59.911111, 10.752778), 4);
+    }).setView(new L.LatLng(59.911111, 10.752778), 12);
 
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         detectRetina: true,
@@ -30,7 +30,7 @@
 
     var leafletView = new PruneClusterForLeaflet();
 
-    var size = 1000000;
+    var size = 10000;
     var markers = [];
     for (var i = 0; i < size; ++i) {
         var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * Math.random() * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * Math.random() * 0.00002 * size);
@@ -45,12 +45,32 @@
             var ll = markers[i].position;
             ll.lat += (Math.random() - 0.5) * 0.00001 * coef;
             ll.lng += (Math.random() - 0.5) * 0.00002 * coef;
+	        markers[i].data.forceIconRedraw = true;
         }
 
         leafletView.ProcessView();
-    }, 3000);
+    }, 5000);
+
+    leafletView.PrepareLeafletMarker = function(leafletMarker, data) {
+	    leafletMarker.setIcon(
+		    L.icon({
+			    iconUrl: Math.random() > 0.5 ? 'helicopter.png' : 'airplane.png',
+			    iconSize: [48, 48]
+		    })
+	    );
+	};
+
+    leafletView.BuildLeafletClusterIcon = function (cluster) {
+		console.log("BuildLeafletClusterIcon");
+	    return PruneClusterForLeaflet.prototype.BuildLeafletClusterIcon.call(this, cluster);
+    };
 
     map.addLayer(leafletView);
+
+    document.getElementById('delete').onclick = function () {
+	    leafletView.RedrawIcons();
+	    return false;
+    };
 </script>
 </body>
 </html>

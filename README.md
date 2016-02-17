@@ -6,7 +6,7 @@ PruneCluster is a fast and realtime marker clustering library.
 It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster).
 
  
-*The library is designed for large datasets or live situations.* The memory consumption is keeped low and the library is fast on mobile devices, thanks to a new algorithm inspired by collision detection in physical engines.
+*The library is designed for large datasets or live situations.* The memory consumption is kept low and the library is fast on mobile devices, thanks to a new algorithm inspired by collision detection in physical engines.
 
 ![](http://medias.master-bridge.eu/resize/728/720/59dedba492400bfefddf3179fa83f18fbf4ee599.png)
 **Some tweets over the world**
@@ -27,14 +27,14 @@ Number of markers|First step|Update (low zoom level)|Update (high zoom level)
 [150 000](http://sintef-9012.github.io/PruneCluster/examples/random.150000.html)|220ms|60ms|20ms
 [1 000 000](http://sintef-9012.github.io/PruneCluster/examples/random.1000000.html)|1.9s|400ms|135ms
 
-This values are tested with random positions, on a recent laptop and Chrome 38. The half of markers is moving randomly and the other half is static. It is also fast enough for mobile devices.
+These values are tested with random positions, on a recent laptop, using Chrome 38. One half of markers is moving randomly and the other half is static. It is also fast enough for mobile devices.
 
 If you prefer real world data, the [50k Leaflet.markercluster example](http://sintef-9012.github.io/PruneCluster/examples/realworld.50000.html) is computed in 60ms *([original](http://sintef-9012.github.io/Leaflet.markercluster/example/marker-clustering-realworld.50000.html))*.
 
 #### Weight
 You can specify the weight of each marker.
 
-For example, you may want to add more importance to a marker representing an incident than a marker representing a tweet.
+For example, you may want to add more importance to a marker representing an incident, than a marker representing a tweet.
 
 #### Categories
 
@@ -44,13 +44,22 @@ You can specify a category for the markers. Then a small object representing the
 
 #### Dynamic cluster size
 
-The size of cluster can be adjusted on the fly *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
+The size of a cluster can be adjusted on the fly *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
 
 #### Filtering
-The markers can be filtered easely with no performance cost.
+The markers can be filtered easily with no performance cost.
 
 
 ### Usage
+```html
+	<!-- In <head> -->
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+
+	<!-- In <head> or before </body> -->
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script src="PruneCluster/dist/PruneCluster.js"></script>
+```
+
 ```javascript
 var pruneCluster = new PruneClusterForLeaflet();
 
@@ -62,6 +71,12 @@ pruneCluster.RegisterMarker(marker);
 leafletMap.addLayer(pruneCluster);
 ```
 
+### PruneClusterForLeaflet constructor
+PruneClusterForLeaflet([size](#set-the-clustering-size), margin)
+
+You can specify the size and margin which affect when your clusters and markers will be merged.
+
+size defaults to 120 and margin to 20.
 
 #### Update a position
 ```javascript
@@ -69,14 +84,16 @@ marker.Move(lat, lng);
 ```
 
 #### Deletions
-The method argument is an array of markers, it is better to group the deletions.
-
 ```javascript
+// Remove all the markers
+pruneCluster.RemoveMarkers();
+
+// Remove a list of markers
 pruneCluster.RemoveMarkers([markerA,markerB,...]);
 ```
 
 #### Set the category
-The category can be a number or a string, but in order to minimize the performance cost, it is recommanded to use numbers between 0 and 7.
+The category can be a number or a string, but in order to minimize the performance cost, it is recommended to use numbers between 0 and 7.
 ```javascript
 marker.category = 5;
 ```
@@ -92,11 +109,14 @@ marker.filtered = true|false;
 ```
 
 #### Set the clustering size
+You can specify a number indicating the area of the cluster. Higher number means more markers "merged". *([Example](http://sintef-9012.github.io/PruneCluster/examples/random.10000-size.html))*
 ```javascript
 pruneCluster.Cluster.Size = 87;
 ```
 
 #### Apply the changes
+
+**Must be called when ANY changes are made.**
 
 ```javascript
 pruneCluster.ProcessView();
@@ -111,18 +131,42 @@ marker.data.ID = '76ez';
 ```
 
 #### Setting up a Leaflet icon or a Leaflet popup
-In order to improve the performances, the Leaflet marker is created only if needed and can be recycled. You can setup the marker by overriding the PreapareLeafletMarker method.
+
+You can attach to the markers an icon object and a popup content
+```javascript
+marker.data.icon = L.icon(...);  // See http://leafletjs.com/reference.html#icon
+marker.data.popup = 'Popup content';
+```
+
+#### Faster leaflet icons
+
+If you have a lot of markers, you can create the icons and popups on the fly in order to improve their performance.
+
+```javascript
+function createIcon(data, category) {
+    return L.icon(...);
+}
+
+...
+
+marker.data.icon = createIcon;
+```
+
+You can also override the PreapareLeafletMarker method. You can apply listeners to the markers here.
 
 ```javascript
 pruneCluster.PrepareLeafletMarker = function(leafletMarker, data) {
     leafletMarker.setIcon(/*... */); // See http://leafletjs.com/reference.html#icon
-    
+    //listeners can be applied to markers in this function
+    leafletMarker.on('click', function(){
+    //do click event logic here
+    });
     // A popup can already be attached to the marker
     // bindPopup can override it, but it's faster to update the content instead
     if (leafletMarker.getPopup()) {
         leafletMarker.setPopupContent(data.name);
     } else {
-        marker.bindPopup(data.title);
+        leafletMarker.bindPopup(data.name);
     }
 };
 ```
@@ -135,7 +179,7 @@ pruneCluster.BuildLeafletClusterIcon = function(cluster) {
 
     // If you want list of markers inside the cluster
     // (you must enable the option using PruneCluster.Cluster.ENABLE_MARKERS_LIST = true)
-    var markers = cluster.getClusterMarkers() 
+    var markers = cluster.GetClusterMarkers() 
         
     ...
     
@@ -143,11 +187,80 @@ pruneCluster.BuildLeafletClusterIcon = function(cluster) {
 };
 ```
 
+#### Listening to events on a cluster
+
+To listen to events on the cluster, you will need to override the ```BuildLeafletCluster``` method. A click event is already specified on m, but you can add other events like mouseover, mouseout, etc. Any events that a Leaflet marker supports, the cluster also supports, since it is just a modified marker. A full list of events can be found [here](http://leafletjs.com/reference.html#marker-click).
+
+Below is an example of how to implement mouseover and mousedown for the cluster, but any events can be used in place of those.
+```javascript
+pruneCluster.BuildLeafletCluster = function(cluster, position) {
+      var m = new L.Marker(position, {
+        icon: pruneCluster.BuildLeafletClusterIcon(cluster)
+      });
+
+      m.on('click', function() {
+        // Compute the  cluster bounds (it's slow : O(n))
+        var markersArea = pruneCluster.Cluster.FindMarkersInArea(cluster.bounds);
+        var b = pruneCluster.Cluster.ComputeBounds(markersArea);
+
+        if (b) {
+          var bounds = new L.LatLngBounds(
+            new L.LatLng(b.minLat, b.maxLng),
+            new L.LatLng(b.maxLat, b.minLng));
+
+          var zoomLevelBefore = pruneCluster._map.getZoom();
+          var zoomLevelAfter = pruneCluster._map.getBoundsZoom(bounds, false, new L.Point(20, 20, null));
+
+          // If the zoom level doesn't change
+          if (zoomLevelAfter === zoomLevelBefore) {
+            // Send an event for the LeafletSpiderfier
+            pruneCluster._map.fire('overlappingmarkers', {
+              cluster: pruneCluster,
+              markers: markersArea,
+              center: m.getLatLng(),
+              marker: m
+            });
+
+            pruneCluster._map.setView(position, zoomLevelAfter);
+          }
+          else {
+            pruneCluster._map.fitBounds(bounds);
+          }
+        }
+      });
+      m.on('mouseover', function() {
+        //do mouseover stuff here
+      });
+      m.on('mouseout', function() {
+        //do mouseout stuff here
+      });
+
+      return m;
+    };
+};
+```
+
+#### Redraw the icons
+
+Marker icon redrawing with a flag:
+
+```javascript
+marker.data.forceIconRedraw = true;
+
+...
+
+pruneCluster.ProcessView();
+```
+
+Redraw all the icons:
+```javascript
+pruneCluster.RedrawIcons();
+```
 
 ### Acknowledgements
 
-This library is developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project.
+This library was developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project. It is now supported by the community and we thank [the contributors](https://github.com/SINTEF-9012/PruneCluster/graphs/contributors).
 
 ### Licence
 
-The source code of this library is licenced under the MIT License.
+The source code of this library is licensed under the MIT License.
