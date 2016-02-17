@@ -328,12 +328,16 @@ var PruneCluster;
             }
             return result;
         };
-        PruneCluster.prototype.ComputeBounds = function (markers) {
+        PruneCluster.prototype.ComputeBounds = function (markers, withFiltered) {
+            if (withFiltered === void 0) { withFiltered = true; }
             if (!markers || !markers.length) {
                 return null;
             }
             var rMinLat = Number.MAX_VALUE, rMaxLat = -Number.MAX_VALUE, rMinLng = Number.MAX_VALUE, rMaxLng = -Number.MAX_VALUE;
             for (var i = 0, l = markers.length; i < l; ++i) {
+                if (markers[i].filtered) {
+                    continue;
+                }
                 var pos = markers[i].position;
                 if (pos.lat < rMinLat)
                     rMinLat = pos.lat;
@@ -354,8 +358,9 @@ var PruneCluster;
         PruneCluster.prototype.FindMarkersBoundsInArea = function (area) {
             return this.ComputeBounds(this.FindMarkersInArea(area));
         };
-        PruneCluster.prototype.ComputeGlobalBounds = function () {
-            return this.ComputeBounds(this._markers);
+        PruneCluster.prototype.ComputeGlobalBounds = function (withFiltered) {
+            if (withFiltered === void 0) { withFiltered = true; }
+            return this.ComputeBounds(this._markers, withFiltered);
         };
         PruneCluster.prototype.GetMarkers = function () {
             return this._markers;
@@ -778,8 +783,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         this._hardMove = false;
         this._resetIcons = false;
     },
-    FitBounds: function () {
-        var bounds = this.Cluster.ComputeGlobalBounds();
+    FitBounds: function (withFiltered) {
+        if (withFiltered === void 0) { withFiltered = true; }
+        var bounds = this.Cluster.ComputeGlobalBounds(withFiltered);
         if (bounds) {
             this._map.fitBounds(new L.LatLngBounds(new L.LatLng(bounds.minLat, bounds.maxLng), new L.LatLng(bounds.maxLat, bounds.minLng)));
         }
