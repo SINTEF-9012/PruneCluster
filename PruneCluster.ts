@@ -564,7 +564,7 @@ module PruneCluster {
 
 		// Compute the bounds of the list of markers
 		// It's slow O(n)
-		public ComputeBounds(markers: Marker[]): Bounds {
+		public ComputeBounds(markers: Marker[], withFiltered: boolean = true): Bounds {
 
 			if (!markers || !markers.length) {
 				return null;
@@ -576,6 +576,9 @@ module PruneCluster {
 				rMaxLng = -Number.MAX_VALUE;
 
 			for (var i = 0, l = markers.length; i < l; ++i) {
+                if (!withFiltered && markers[i].filtered) {
+                    continue;
+                }
 				var pos = markers[i].position;
 
 				if (pos.lat < rMinLat) rMinLat = pos.lat;
@@ -596,8 +599,8 @@ module PruneCluster {
 			return this.ComputeBounds(this.FindMarkersInArea(area));
 		}
 
-		public ComputeGlobalBounds(): Bounds {
-			return this.ComputeBounds(this._markers);
+		public ComputeGlobalBounds(withFiltered: boolean = true): Bounds {
+			return this.ComputeBounds(this._markers, withFiltered);
 		}
 
 		public GetMarkers(): Marker[] {
