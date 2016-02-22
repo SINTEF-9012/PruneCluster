@@ -335,7 +335,7 @@ var PruneCluster;
             }
             var rMinLat = Number.MAX_VALUE, rMaxLat = -Number.MAX_VALUE, rMinLng = Number.MAX_VALUE, rMaxLng = -Number.MAX_VALUE;
             for (var i = 0, l = markers.length; i < l; ++i) {
-                if (markers[i].filtered) {
+                if (!withFiltered && markers[i].filtered) {
                     continue;
                 }
                 var pos = markers[i].position;
