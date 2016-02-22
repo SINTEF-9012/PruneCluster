@@ -1,4 +1,4 @@
-/// <reference path="bower_components/DefinitelyTyped/Leaflet/Leaflet.d.ts"/>
+/// <reference path="typings/tsd.d.ts"/>
 
 module PruneCluster {
 	export declare class LeafletAdapter implements L.ILayer {
@@ -11,7 +11,7 @@ module PruneCluster {
         RegisterMarkers: (markers: Marker[]) => void;
 		RemoveMarkers: (markers: Marker[]) => void;
 		ProcessView: () => void;
-		FitBounds: () => void;
+		FitBounds: (withFiltered?: boolean) => void;
 		GetMarkers: () => Marker[];
 		RedrawIcons: (processView?: boolean) => void;
 
@@ -623,8 +623,8 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 		this._resetIcons = false;
 	},
 
-	FitBounds: function() {
-		var bounds: PruneCluster.Bounds = this.Cluster.ComputeGlobalBounds();
+	FitBounds: function(withFiltered: boolean = true) {
+		var bounds: PruneCluster.Bounds = this.Cluster.ComputeGlobalBounds(withFiltered);
 		if (bounds) {
 			this._map.fitBounds(new L.LatLngBounds(
 				new L.LatLng(bounds.minLat, bounds.maxLng),
