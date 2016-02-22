@@ -4,3 +4,4 @@ node_modules/
 PruneCluster.min.js.map
 .project
 .settings/
+typings

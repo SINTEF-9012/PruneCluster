@@ -36,8 +36,6 @@
     for (var i = 0; i < size; ++i) {
         var marker = new PruneCluster.Marker(59.91111 + (Math.random() - 0.5) * Math.random() * 0.00001 * size, 10.752778 + (Math.random() - 0.5) * Math.random() * 0.00002 * size);
 
-        marker.filtered = i < 5000;
-
         markers.push(marker);
         leafletView.RegisterMarker(marker);
     }

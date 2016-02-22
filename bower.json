@@ -1,7 +1,9 @@
 {
   "name": "PruneCluster",
+  "dependencies": {
+    "leaflet": "0.7 - 2"
+  },
   "devDependencies": {
-    "DefinitelyTyped": "*",
     "leaflet-dist": "~0.7.2"
   },
   "ignore": [

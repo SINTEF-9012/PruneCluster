@@ -1,0 +1,12 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "typings",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "leaflet/leaflet.d.ts": {
+      "commit": "b57c33fec0be3cba8f5e9cec642db873565923d0"
+    }
+  }
+}

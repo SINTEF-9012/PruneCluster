@@ -328,12 +328,16 @@ var PruneCluster;
             }
             return result;
         };
-        PruneCluster.prototype.ComputeBounds = function (markers) {
+        PruneCluster.prototype.ComputeBounds = function (markers, withFiltered) {
+            if (withFiltered === void 0) { withFiltered = true; }
             if (!markers || !markers.length) {
                 return null;
             }
             var rMinLat = Number.MAX_VALUE, rMaxLat = -Number.MAX_VALUE, rMinLng = Number.MAX_VALUE, rMaxLng = -Number.MAX_VALUE;
             for (var i = 0, l = markers.length; i < l; ++i) {
+                if (!withFiltered && markers[i].filtered) {
+                    continue;
+                }
                 var pos = markers[i].position;
                 if (pos.lat < rMinLat)
                     rMinLat = pos.lat;
@@ -354,8 +358,9 @@ var PruneCluster;
         PruneCluster.prototype.FindMarkersBoundsInArea = function (area) {
             return this.ComputeBounds(this.FindMarkersInArea(area));
         };
-        PruneCluster.prototype.ComputeGlobalBounds = function () {
-            return this.ComputeBounds(this._markers);
+        PruneCluster.prototype.ComputeGlobalBounds = function (withFiltered) {
+            if (withFiltered === void 0) { withFiltered = true; }
+            return this.ComputeBounds(this._markers, withFiltered);
         };
         PruneCluster.prototype.GetMarkers = function () {
             return this._markers;
@@ -573,6 +578,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
             marker._removeFromMap = true;
         }
         var clusterCreationList = [];
+        var clusterCreationListPopOne = [];
         var opacityUpdateList = [];
         var workingList = [];
         for (i = 0, l = clusters.length; i < l; ++i) {
@@ -635,7 +641,12 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                 }
             }
             if (!m) {
-                clusterCreationList.push(cluster);
+                if (cluster.population === 1) {
+                    clusterCreationListPopOne.push(cluster);
+                }
+                else {
+                    clusterCreationList.push(cluster);
+                }
                 data._leafletPosition = position;
                 data._leafletOldPopulation = cluster.population;
                 data._leafletOldHashCode = cluster.hashCode;
@@ -650,6 +661,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                 data._leafletPosition = position;
             }
         });
+        clusterCreationList = clusterCreationListPopOne.concat(clusterCreationList);
         for (i = 0, l = objectsOnMap.length; i < l; ++i) {
             icluster = objectsOnMap[i];
             var idata = icluster.data;
@@ -662,27 +674,28 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                         lngMargin = (icluster.bounds.maxLng - icluster.bounds.minLng) * marginRatio;
                     for (j = 0, ll = clusterCreationList.length; j < ll; ++j) {
                         var jcluster = clusterCreationList[j], jdata = jcluster.data;
-                        var pb = jcluster.averagePosition;
-                        var oldMinLng = pa.lng - lngMargin, newMaxLng = pb.lng + lngMargin;
-                        oldMaxLng = pa.lng + lngMargin;
-                        oldMinLat = pa.lat - latMargin;
-                        oldMaxLat = pa.lat + latMargin;
-                        newMinLng = pb.lng - lngMargin;
-                        newMinLat = pb.lat - latMargin;
-                        newMaxLat = pb.lat + latMargin;
-                        if (oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat) {
-                            if (marker._population === 1 && jcluster.population === 1 &&
-                                marker._hashCode === jcluster.hashCode) {
-                                if (resetIcons || jcluster.lastMarker.data.forceIconRedraw) {
-                                    this.PrepareLeafletMarker(marker, jcluster.lastMarker.data, jcluster.lastMarker.category);
-                                    if (jcluster.lastMarker.data.forceIconRedraw) {
-                                        jcluster.lastMarker.data.forceIconRedraw = false;
-                                    }
+                        if (marker._population === 1 && jcluster.population === 1 &&
+                            marker._hashCode === jcluster.hashCode) {
+                            if (resetIcons || jcluster.lastMarker.data.forceIconRedraw) {
+                                this.PrepareLeafletMarker(marker, jcluster.lastMarker.data, jcluster.lastMarker.category);
+                                if (jcluster.lastMarker.data.forceIconRedraw) {
+                                    jcluster.lastMarker.data.forceIconRedraw = false;
                                 }
-                                marker.setLatLng(jdata._leafletPosition);
-                                remove = false;
                             }
-                            else if (marker._population > 1 && jcluster.population > 1) {
+                            marker.setLatLng(jdata._leafletPosition);
+                            remove = false;
+                        }
+                        else {
+                            var pb = jcluster.averagePosition;
+                            var oldMinLng = pa.lng - lngMargin, newMaxLng = pb.lng + lngMargin;
+                            oldMaxLng = pa.lng + lngMargin;
+                            oldMinLat = pa.lat - latMargin;
+                            oldMaxLat = pa.lat + latMargin;
+                            newMinLng = pb.lng - lngMargin;
+                            newMinLat = pb.lat - latMargin;
+                            newMaxLat = pb.lat + latMargin;
+                            if ((marker._population > 1 && jcluster.population > 1) &&
+                                (oldMaxLng > newMinLng && oldMinLng < newMaxLng && oldMaxLat > newMinLat && oldMinLat < newMaxLat)) {
                                 marker.setLatLng(jdata._leafletPosition);
                                 marker.setIcon(this.BuildLeafletClusterIcon(jcluster));
                                 var poisson = {};
@@ -693,15 +706,15 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                                 marker._population = jcluster.population;
                                 remove = false;
                             }
-                            if (!remove) {
-                                jdata._leafletMarker = marker;
-                                marker._removeFromMap = false;
-                                newObjectsOnMap.push(jcluster);
-                                clusterCreationList.splice(j, 1);
-                                --j;
-                                --ll;
-                                break;
-                            }
+                        }
+                        if (!remove) {
+                            jdata._leafletMarker = marker;
+                            marker._removeFromMap = false;
+                            newObjectsOnMap.push(jcluster);
+                            clusterCreationList.splice(j, 1);
+                            --j;
+                            --ll;
+                            break;
                         }
                     }
                 }
@@ -778,8 +791,9 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
         this._hardMove = false;
         this._resetIcons = false;
     },
-    FitBounds: function () {
-        var bounds = this.Cluster.ComputeGlobalBounds();
+    FitBounds: function (withFiltered) {
+        if (withFiltered === void 0) { withFiltered = true; }
+        var bounds = this.Cluster.ComputeGlobalBounds(withFiltered);
         if (bounds) {
             this._map.fitBounds(new L.LatLngBounds(new L.LatLng(bounds.minLat, bounds.maxLng), new L.LatLng(bounds.maxLat, bounds.minLng)));
         }

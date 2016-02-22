@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>PruneCluster - Bug 107</title>
+
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi" />
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.css"/>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.js"></script>
+
+    <script src="../dist/PruneCluster.js"></script>
+
+    <link rel="stylesheet" href="examples.css"/>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false
+    }).setView(new L.LatLng(59.911111, 10.752778), 17);
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    var leafletView = new PruneClusterForLeaflet(60);
+
+    var lngA = 10.748778;
+    var lngB = 10.758;
+    var marker = new PruneCluster.Marker(59.91111, lngA);
+    leafletView.RegisterMarker(marker);
+
+    window.setInterval(function () {
+        if (marker.position.lng === lngA) {
+            marker.position.lng = lngB;
+        } else {
+            marker.position.lng = lngA;
+        }
+        leafletView.ProcessView();
+    }, 1200);
+
+    map.addLayer(leafletView);
+</script>
+</body>
+</html>
