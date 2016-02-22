@@ -1,6 +1,9 @@
 {
   "name": "PruneCluster",
   "version": "2.0.0-beta.2",
+  "homepage": "https://github.com/SINTEF-9012/PruneCluster",
+  "description": "Fast and realtime marker clustering for Leaflet",
+  "keywords": ["map", "clustering", "leaflet", "marker", "realtime"],
   "license": "MIT",
   "repository": {
     "type": "git",
