@@ -525,6 +525,9 @@ module PruneCluster {
 				if (!(<any>this._markers[i])._removeFlag) {
 					newMarkersList.push(this._markers[i]);
 				}
+                else{
+                    delete (<any>this._markers[i])._removeFlag;
+                }
 			}
 
 			this._markers = newMarkersList;
