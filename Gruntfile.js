@@ -19,7 +19,7 @@ module.exports = function (grunt) {
                 // outDir:'build',
                 options: {
                     target: 'es5',
-                    module: 'commonjs',
+                    module: 'umd',
                     sourceMap: true,
                     additionalFlags: "--declaration"
                 }
