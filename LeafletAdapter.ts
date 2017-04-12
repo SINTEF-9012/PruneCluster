@@ -148,7 +148,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					}
 
 					// TODO use an option registered somewhere
-					if (markersArea.length < 200) { 
+					if (markersArea.length < 200 || zoomLevelAfter >= this._map.getMaxZoom()) { 
 
 						// Send an event for the LeafletSpiderfier
 						this._map.fire('overlappingmarkers', {
@@ -158,7 +158,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 							marker: m
 						});
 
-					} else if (zoomLevelAfter < this._map.getMaxZoom()) {
+					} else {
 						zoomLevelAfter++;
 					}
 
