@@ -21,5 +21,5 @@
     "type": "git",
     "url": "https://github.com/SINTEF-9012/PruneCluster.git"
   },
-  "main": ["./dist/LeafletStyleSheet.css", "./dist/PruneCluster.js"]
+  "main": ["dist/LeafletStyleSheet.css", "dist/PruneCluster.js"]
 }
