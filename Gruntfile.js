@@ -5,31 +5,44 @@ module.exports = function (grunt) {
     require('time-grunt')(grunt);
     grunt.initConfig({
         clean: {
-            ts: {
+            dist: {
                 files: [{
-                    src: ["dist/*.js", "dist/*.d.ts", "dist/*.map", "dist/*.css"]
+                    src: ["dist/*.js", "dist/*.d.ts", "dist/*.css"]
+                }],
+            },
+            dev: {
+                files: [{
+                    src: ["build/*.js", "build/*.d.ts", "build/*.map", "build/*.css"]
                 }],
             }
         },
         ts: {
-            build: {
+            options: {
+                target: 'es5',
+                module: 'commonjs',
+                additionalFlags: "--declaration"
+            },
+            dist: {
                 src: ["PruneCluster.ts", "LeafletAdapter.ts", "LeafletSpiderfier.ts"],
                 reference: "dist/PruneCluster.d.ts",
                 out: './dist/PruneCluster.js',
-                // outDir:'build',
                 options: {
-                    target: 'es5',
-                    module: 'commonjs',
-                    sourceMap: true,
-                    additionalFlags: "--declaration"
+                    sourceMap: false
+                }
+            },
+            dev: {
+                src: ["PruneCluster.ts", "LeafletAdapter.ts", "LeafletSpiderfier.ts"],
+                reference: "build/PruneCluster.d.ts",
+                out: './build/PruneCluster.js',
+                options: {
+                    sourceMap: true
                 }
             }
         },
         uglify: {
             ts: {
                 options: {
-                    sourceMap: true,
-                    sourceMapName: 'dist/PruneCluster.min.js.map'
+                    sourceMap: false
                 },
                 files: {
                     'dist/PruneCluster.min.js': ['dist/PruneCluster.js']
@@ -37,9 +50,13 @@ module.exports = function (grunt) {
             }
         },
         copy: {
-            css: {
+            dist: {
                 src: 'LeafletStyleSheet.css',
                 dest: 'dist/LeafletStyleSheet.css'
+            },
+            dev: {
+                src: 'LeafletStyleSheet.css',
+                dest: 'build/LeafletStyleSheet.css'
             }
         },
         exec: {
@@ -67,14 +84,21 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('build', [
-        'clean:ts',
-        'copy:css',
-        'ts:build',
+    grunt.registerTask('build:dist', [
+        'clean:dist',
+        'copy:dist',
+        'ts:dist',
         'uglify'
     ]);
 
-    grunt.registerTask('default', ['build']);
+    grunt.registerTask('build:dev', [
+        'clean:dev',
+        'copy:dev',
+        'ts:dev'
+    ])
+
+    grunt.registerTask('build',   ['build:dev']);
+    grunt.registerTask('default', ['build:dev']);
 
     // Meteor tasks
     grunt.registerTask('meteor-test', ['exec:meteor-init', 'exec:meteor-test', 'exec:meteor-cleanup']);
