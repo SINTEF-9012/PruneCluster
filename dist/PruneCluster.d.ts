@@ -1,5 +1,5 @@
 /// <reference path="../typings/tsd.d.ts" />
-declare module PruneCluster {
+declare namespace PruneCluster {
     interface Position {
         lat: number;
         lng: number;
@@ -39,7 +39,7 @@ declare module PruneCluster {
         constructor(marker?: Marker);
         AddMarker(marker: Marker): void;
         Reset(): void;
-        ComputeBounds(cluster: PruneCluster): void;
+        ComputeBounds(cluster: PruneCluster.PruneCluster): void;
         GetClusterMarkers(): Marker[];
         ApplyCluster(newCluster: Cluster): void;
     }
@@ -68,9 +68,9 @@ declare module PruneCluster {
         ResetClusters(): void;
     }
 }
-declare module PruneCluster {
+declare namespace PruneCluster {
     class LeafletAdapter implements L.ILayer {
-        Cluster: PruneCluster;
+        Cluster: PruneCluster.PruneCluster;
         onAdd: (map: L.Map) => void;
         onRemove: (map: L.Map) => void;
         RegisterMarker: (marker: Marker) => void;

@@ -9,7 +9,7 @@ It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet
 *The library is designed for large datasets or live situations.* The memory consumption is kept low and the library is fast on mobile devices, thanks to a new algorithm inspired by collision detection in physical engines.
 
 ![](https://sintef-9012.github.io/PruneCluster/twittermap.jpg)
-**Example: Realtime clusters of tweets.*
+**Example: Realtime clusters of tweets.**
 
 ### Features
 

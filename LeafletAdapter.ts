@@ -1,14 +1,14 @@
 /// <reference path="typings/tsd.d.ts"/>
 
-module PruneCluster {
+namespace PruneCluster {
 	export declare class LeafletAdapter implements L.ILayer {
-		Cluster: PruneCluster;
+		Cluster: PruneCluster.PruneCluster;
 
 		onAdd: (map: L.Map) => void;
 		onRemove: (map: L.Map) => void;
 
 		RegisterMarker: (marker: Marker) => void;
-        RegisterMarkers: (markers: Marker[]) => void;
+		RegisterMarkers: (markers: Marker[]) => void;
 		RemoveMarkers: (markers: Marker[]) => void;
 		ProcessView: () => void;
 		FitBounds: (withFiltered?: boolean) => void;
@@ -148,7 +148,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 					}
 
 					// TODO use an option registered somewhere
-					if (markersArea.length < 200) { 
+					if (markersArea.length < 200 || zoomLevelAfter >= this._map.getMaxZoom()) { 
 
 						// Send an event for the LeafletSpiderfier
 						this._map.fire('overlappingmarkers', {
@@ -158,7 +158,7 @@ var PruneClusterForLeaflet = ((<any>L).Layer ? (<any>L).Layer : L.Class).extend(
 							marker: m
 						});
 
-					} else if (zoomLevelAfter < this._map.getMaxZoom()) {
+					} else {
 						zoomLevelAfter++;
 					}
 

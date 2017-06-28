@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>
+  Heatmap with Leaflet
+ </title>
+ <!-- link to leaflet css --> 
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.css"/>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2.rc.2/leaflet.js"></script>
+ <script src="../../dist/PruneCluster.js"></script>
+ <!-- map is full width and height of device -->
+ <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no"/>
+ <!-- css --->
+ <link rel="stylesheet" href="../examples.css"/>
+ 
+</head>
+<body>
+
+ <div id="map"></div>
+<div href="#" id="size">Cluster size: <input type="range" value="160" min="35" max="500" step="1" id="sizeInput"/><span id="currentSize">160</span></div>
+<script>
+	
+	var map = L.map("map", {
+        attributionControl: false,
+        zoomControl: true
+    }).setView(new L.LatLng(28.3949, 84.1240), 15);
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxNativeZoom: 17
+    }).addTo(map);
+
+    var leafletView = new PruneClusterForLeaflet(160);
+
+    var size = 10000;
+    var markers = [];
+	
+	var request = new XMLHttpRequest();
+	request.open("GET", "diwalipretty.json", false);
+	request.send(null)
+	var json = JSON.parse(request.responseText);
+	for (var a = 0; a < json.features.length; a++) {
+		var lon = json.features[a].geometry.coordinates[0];
+		var lat = json.features[a].geometry.coordinates[1];
+		if (lon != 0.0 && lat != 0.0) {
+			var marker = new PruneCluster.Marker(lat, lon);
+			markers.push(marker);
+			leafletView.RegisterMarker(marker);
+		}
+	}
+	console.log("finished parsing")
+	
+    var lastUpdate = 0;
+    window.setInterval(function () {
+	    var now = +new Date();
+	    if ((now - lastUpdate) < 400) {
+	    	return;
+	    }
+
+        for (i = 0; i < size / 2; ++i) {
+            var coef = i < size / 8 ? 10 : 1;
+            var ll = markers[i].position;
+            ll.lat += (Math.random() - 0.5) * 0.00001 * coef;
+            ll.lng += (Math.random() - 0.5) * 0.00002 * coef;
+        }
+
+        leafletView.ProcessView();
+	    lastUpdate = now;
+    }, 500);
+
+    map.addLayer(leafletView);
+
+    var currentSizeSpan = document.getElementById('currentSize');
+
+	var updateSize = function () {
+    	leafletView.Cluster.Size = parseInt(this.value);
+		currentSizeSpan.firstChild.data = this.value;
+
+	    var now = +new Date();
+	    if ((now - lastUpdate) < 400) {
+	    	return;
+	    }
+		leafletView.ProcessView();
+		lastUpdate = now;
+	};
+    document.getElementById('sizeInput').onchange = updateSize; 
+    document.getElementById('sizeInput').oninput = updateSize; 
+    
+</script> 
+</body>
+</html>

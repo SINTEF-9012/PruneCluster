@@ -1,4 +1,4 @@
-module PruneCluster {
+namespace PruneCluster {
 
 	// The position is the real position of the object
 	// using a standard coordinate system, as WGS 84
@@ -207,7 +207,7 @@ module PruneCluster {
 
 		// Compute the bounds
 		// Settle the cluster to the projected grid
-		public ComputeBounds(cluster: PruneCluster) {
+		public ComputeBounds(cluster: PruneCluster.PruneCluster) {
 
 			var proj = cluster.Project(this.position.lat, this.position.lng);
 
@@ -525,6 +525,9 @@ module PruneCluster {
 				if (!(<any>this._markers[i])._removeFlag) {
 					newMarkersList.push(this._markers[i]);
 				}
+                else{
+                    delete (<any>this._markers[i])._removeFlag;
+                }
 			}
 
 			this._markers = newMarkersList;
