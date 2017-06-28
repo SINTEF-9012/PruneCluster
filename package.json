@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/SINTEF-9012/PruneCluster.git"
   },
+  "main": "./dist/PruneCluster.js",
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "~1.1.0",
