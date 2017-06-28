@@ -1,14 +1,14 @@
 /// <reference path="typings/tsd.d.ts"/>
 
-module PruneCluster {
+namespace PruneCluster {
 	export declare class LeafletAdapter implements L.ILayer {
-		Cluster: PruneCluster;
+		Cluster: PruneCluster.PruneCluster;
 
 		onAdd: (map: L.Map) => void;
 		onRemove: (map: L.Map) => void;
 
 		RegisterMarker: (marker: Marker) => void;
-        RegisterMarkers: (markers: Marker[]) => void;
+		RegisterMarkers: (markers: Marker[]) => void;
 		RemoveMarkers: (markers: Marker[]) => void;
 		ProcessView: () => void;
 		FitBounds: (withFiltered?: boolean) => void;
