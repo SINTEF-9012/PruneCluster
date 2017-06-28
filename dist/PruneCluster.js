@@ -459,7 +459,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                         }
                         markersArea = newMarkersArea;
                     }
-                    if (markersArea.length < 200) {
+                    if (markersArea.length < 200 || zoomLevelAfter >= _this._map.getMaxZoom()) {
                         _this._map.fire('overlappingmarkers', {
                             cluster: _this,
                             markers: markersArea,
@@ -467,7 +467,7 @@ var PruneClusterForLeaflet = (L.Layer ? L.Layer : L.Class).extend({
                             marker: m
                         });
                     }
-                    else if (zoomLevelAfter < _this._map.getMaxZoom()) {
+                    else {
                         zoomLevelAfter++;
                     }
                     _this._map.setView(m.getLatLng(), zoomLevelAfter);
