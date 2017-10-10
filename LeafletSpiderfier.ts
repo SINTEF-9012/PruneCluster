@@ -172,10 +172,11 @@ var PruneClusterLeafletSpiderfier = ((<any>L).Layer ? (<any>L).Layer : L.Class).
 			this._currentMarkers[i].setLatLng(this._currentCenter).setOpacity(0);
 		}
 
+		var map = this._map;
 		var markers = this._currentMarkers;
 		window.setTimeout(() => {
 			for (i = 0, l = markers.length; i < l; ++i) {
-				this._map.removeLayer(markers[i]);
+				map.removeLayer(markers[i]);
 			}
 
 		}, 300);
