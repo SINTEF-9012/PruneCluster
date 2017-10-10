@@ -18,7 +18,7 @@ It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet
 ### Features
 
 #### Realtime
-The clusters can be updated in realtime. It's perfect for live situations.
+The clusters can be updated in realtime. It's perfect for live datasets or datasets you want to filter at runtime.
 
 #### Fast
 
