@@ -75,12 +75,13 @@ import { PruneCluster, PruneClusterForLeaflet } from 'exports-loader?PruneCluste
 
 ```
 
+#### Example
 
 ```javascript
 var pruneCluster = new PruneClusterForLeaflet();
 
 ...
-var marker = new PruneCluster.Marker(latitude, longitude);
+var marker = new PruneCluster.Marker(59.8717, 11.1909);
 pruneCluster.RegisterMarker(marker);
 ...
 
