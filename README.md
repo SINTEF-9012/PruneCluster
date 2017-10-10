@@ -3,10 +3,14 @@
 
 PruneCluster is a fast and realtime marker clustering library.
 
+Example: [150 000 randomly moving markers](http://sintef-9012.github.io/PruneCluster/examples/random.150000.html).
+
+
 It's working with [Leaflet](http://leafletjs.com/) as an alternative to [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster).
 
  
 *The library is designed for large datasets or live situations.* The memory consumption is kept low and the library is fast on mobile devices, thanks to a new algorithm inspired by collision detection in physical engines.
+
 
 ![](https://sintef-9012.github.io/PruneCluster/twittermap.jpg)
 **Example: Realtime clusters of tweets.**
@@ -89,7 +93,10 @@ leafletMap.addLayer(pruneCluster);
 ```
 
 ### PruneClusterForLeaflet constructor
-PruneClusterForLeaflet([size](#set-the-clustering-size), margin)
+
+```javascript
+PruneClusterForLeaflet([size](#set-the-clustering-size), margin);
+```
 
 You can specify the size and margin which affect when your clusters and markers will be merged.
 
