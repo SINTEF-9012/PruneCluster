@@ -59,6 +59,13 @@ The markers can be filtered easily with no performance cost.
 	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
 	<script src="PruneCluster/dist/PruneCluster.js"></script>
 ```
+```Webpack & NPM
+console > npm install exports-loader prunecluster
+
+///index.js
+import { PruneCluster, PruneClusterForLeaflet } from 'exports-loader?PruneCluster,PruneClusterForLeaflet!prunecluster/dist/PruneCluster.js'
+```
+
 
 ```javascript
 var pruneCluster = new PruneClusterForLeaflet();
