@@ -1,0 +1,15 @@
+(function(root, factory) {
+    if(typeof define === 'function' && define.amd) {
+        define(['leaflet'], factory);
+    } else if (typeof module !== 'undefined') {
+        module.exports = factory(require('leaflet'));
+    } else {
+        if (!root.L) {
+            throw 'Leaflet must be loaded previously';
+        }
+
+        var PruneClusterModule = factory(root.L);
+        root.PruneCluster = PruneClusterModule.PruneCluster;
+        root.PruneClusterForLeaflet = PruneClusterModule.PruneClusterForLeaflet;
+    }
+}(this, function(L) {

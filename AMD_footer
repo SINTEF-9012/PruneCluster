@@ -1,0 +1,5 @@
+    return {
+        PruneCluster: PruneCluster,
+        PruneClusterForLeaflet: PruneClusterForLeaflet
+    };
+}));

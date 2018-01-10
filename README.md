@@ -92,6 +92,35 @@ pruneCluster.RegisterMarker(marker);
 leafletMap.addLayer(pruneCluster);
 ```
 
+#### AMD
+
+```
+npm install
+npm install -g grunt-cli
+grunt build:dist --force
+```
+
+Then, you will have files ready to use in AMD style under `dist` directory.
+
+#### Example
+
+```javascript
+// First 'PruneCluster' must be declared in your module loader, pointing to file 'dist/PruneCluster.amd.min.js'
+// (or use path to file instead)
+
+define(['PruneCluster', function(PruneClusterModule) {
+
+  var pruneCluster = new PruneClusterModule.PruneClusterForLeaflet();
+
+  ...
+  var marker = new PruneClusterModule.PruneCluster.Marker(59.8717, 11.1909);
+  pruneCluster.RegisterMarker(marker);
+  ...
+
+  leafletMap.addLayer(pruneCluster);
+});
+```
+
 ### PruneClusterForLeaflet constructor
 
 ```javascript
