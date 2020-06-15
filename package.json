@@ -1,5 +1,5 @@
 {
-  "name": "PruneCluster",
+  "name": "@sintef/prune-cluster",
   "version": "2.1.0",
   "homepage": "https://github.com/SINTEF-9012/PruneCluster",
   "description": "Fast and realtime marker clustering for Leaflet",
