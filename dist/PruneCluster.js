@@ -928,14 +928,14 @@ var PruneClusterLeafletSpiderfier = (L.Layer ? L.Layer : L.Class).extend({
         return res;
     },
     Unspiderfy: function () {
-        var _this = this;
         for (var i = 0, l = this._currentMarkers.length; i < l; ++i) {
             this._currentMarkers[i].setLatLng(this._currentCenter).setOpacity(0);
         }
+        var map = this._map;
         var markers = this._currentMarkers;
         window.setTimeout(function () {
             for (i = 0, l = markers.length; i < l; ++i) {
-                _this._map.removeLayer(markers[i]);
+                map.removeLayer(markers[i]);
             }
         }, 300);
         this._currentMarkers = [];

@@ -8,19 +8,19 @@ module.exports = function (grunt) {
             dist: {
                 files: [{
                     src: ["dist/*.js", "dist/*.d.ts", "dist/*.css"]
-                }],
+                }]
             },
             dev: {
                 files: [{
                     src: ["build/*.js", "build/*.d.ts", "build/*.map", "build/*.css"]
-                }],
+                }]
             }
         },
         ts: {
             options: {
                 target: 'es5',
                 module: 'amd',
-                declaration: true,
+                declaration: true
             },
             dist: {
                 src: ["PruneCluster.ts", "LeafletAdapter.ts", "LeafletSpiderfier.ts"],
@@ -37,13 +37,20 @@ module.exports = function (grunt) {
                 }
             }
         },
+        concat: {
+            dist: {
+                src: ['./AMD_header', './dist/PruneCluster.js', './AMD_footer'],
+                dest: './dist/PruneCluster.amd.js'
+            }
+        },
         uglify: {
             ts: {
                 options: {
                     sourceMap: false
                 },
                 files: {
-                    'dist/PruneCluster.min.js': ['dist/PruneCluster.js']
+                    'dist/PruneCluster.min.js': ['dist/PruneCluster.js'],
+                    'dist/PruneCluster.amd.min.js': ['dist/PruneCluster.amd.js']
                 }
             }
         },
@@ -86,6 +93,7 @@ module.exports = function (grunt) {
         'clean:dist',
         'copy:dist',
         'ts:dist',
+        'concat:dist',
         'uglify'
     ]);
 
@@ -93,7 +101,7 @@ module.exports = function (grunt) {
         'clean:dev',
         'copy:dev',
         'ts:dev'
-    ])
+    ]);
 
     grunt.registerTask('build',   ['build:dev']);
     grunt.registerTask('default', ['build:dev']);
