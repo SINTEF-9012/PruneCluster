@@ -16,6 +16,10 @@
     "url": "https://github.com/SINTEF-9012/PruneCluster.git"
   },
   "main": "./dist/PruneCluster.js",
+  "scripts": {
+    "build": "grunt build",
+    "postinstall": "tsd install"
+  },
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "~1.1.0",
@@ -26,6 +30,7 @@
     "load-grunt-tasks": "~3.5.2",
     "spacejam": "^1.1.1",
     "time-grunt": "~1.4.0",
+    "tsd": "^0.6.5",
     "typescript": "^2.4.1"
   }
 }
