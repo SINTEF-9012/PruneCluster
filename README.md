@@ -44,7 +44,7 @@ For example, you may want to add more importance to a marker representing an inc
 
 You can specify a category for the markers. Then a small object representing the number of markers for each category is attached to the clusters. This way, you can create cluster icons adapted to their content.
 
-[![](https://sintef-9012.github.io/PruneCluster/clustering_a.png)](http://sintef-9012.github.io/PruneCluster/examples/random.10000-categories.html) [![](https://sintef-9012.github.io/PruneCluster/clustering_b.png)](http://sintef-9012.github.io/PruneCluster/examples/random.10000-categories-2.html)
+[![](https://sintef-9012.github.io/PruneCluster/clustering_a.png)](http://sintef-9012.github.io/PruneCluster/examples/random.10000-categories-2.html) [![](https://sintef-9012.github.io/PruneCluster/clustering_b.png)](http://sintef-9012.github.io/PruneCluster/examples/random.10000-categories.html)
 
 #### Dynamic cluster size
 
